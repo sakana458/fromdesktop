@@ -1,0 +1,332 @@
+global proc shelf_FXCaching () {
+    global string $gBuffStr;
+    global string $gBuffStr0;
+    global string $gBuffStr1;
+
+
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "初期状態を設定: 流体の現在の状態を初期状態として設定します" 
+        -enableBackground 0
+        -align "center" 
+        -label "初期状態を設定" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "fluidInitialStateSet.png" 
+        -image1 "fluidInitialStateSet.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "SetInitialState" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "初期状態のクリア: 前に設定した初期状態を除去します" 
+        -enableBackground 0
+        -align "center" 
+        -label "初期状態のクリア" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "fluidInitialStateClear.png" 
+        -image1 "fluidInitialStateClear.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "ClearInitialState" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "キャッシュの作成: 再生およびレンダー キャッシュを作成するためにランナップを行います" 
+        -enableBackground 0
+        -align "center" 
+        -label "キャッシュの作成" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "fluidCacheCreate.png" 
+        -image1 "fluidCacheCreate.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CreateFluidCache" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreateFluidCacheOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "キャッシュの削除: 選択した nCloth メッシュ、nParticle または流体オブジェクトのキャッシュを削除します。" 
+        -enableBackground 0
+        -align "center" 
+        -label "キャッシュの削除" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "fluidCacheDelete.png" 
+        -image1 "fluidCacheDelete.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "fluidDeleteCache" 
+        -sourceType "mel" 
+        -doubleClickCommand "fluidDeleteCacheOpt" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    separator
+        -enable 1
+        -width 12
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "選択した nCloth メッシュ、nHair、または nParticle を基に、キャッシュを作成します。" 
+        -enableBackground 0
+        -align "center" 
+        -label "新規キャッシュの作成" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "tinyBoldLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "nClothCacheCreate.png" 
+        -image1 "nClothCacheCreate.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "doCreateNclothCache 4 { \"2\", \"1\", \"10\", \"OneFilePerFrame\", \"1\", \"\",\"1\",\"\",\"0\", \"0\", \"0\", \"1\", \"1\",\"0\",\"1\" } " 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "選択した nCloth メッシュ、nHair、または nParticle のキャッシュを削除します。" 
+        -enableBackground 0
+        -align "center" 
+        -label "キャッシュの削除" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "tinyBoldLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "nClothCacheDelete.png" 
+        -image1 "nClothCacheDelete.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "deleteNclothCache" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "選択した nCloth、nHair、または nParticle オブジェクトのすべてのキャッシュを有効にします" 
+        -enableBackground 0
+        -align "center" 
+        -label "選択項目にあるすべてのキャッシュの有効化" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "tinyBoldLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "nClothCacheEnable.png" 
+        -image1 "nClothCacheEnable.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "setCacheEnable 1 0 {}" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "選択した nCloth、nHair、または nParticle オブジェクトのすべてのキャッシュを無効にします" 
+        -enableBackground 0
+        -align "center" 
+        -label "選択項目にあるすべてのキャッシュの無効化" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "tinyBoldLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "nClothCacheDisable.png" 
+        -image1 "nClothCacheDisable.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "setCacheEnable 0 0 {}" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "選択した nCloth または nParticle を基に、既存のキャッシュを新しいキャッシュへとマージします" 
+        -enableBackground 0
+        -align "center" 
+        -label "キャッシュのマージ" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "tinyBoldLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "nClothCacheMerge.png" 
+        -image1 "nClothCacheMerge.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "doCreateNclothCache 4 { \"2\", \"1\", \"10\", \"OneFilePerFrame\", \"1\", \"\",\"1\",\"\",\"0\", \"merge\", \"0\", \"1\", \"1\",\"0\",\"1\" } " 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "nCache のフレームを置き換えます" 
+        -enableBackground 0
+        -align "center" 
+        -label "キャッシュ フレームの置き換え" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "tinyBoldLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "nClothCacheReplaceFrames.png" 
+        -image1 "nClothCacheReplaceFrames.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "doReplaceNclothCacheFrames 1 1 10 0 1 0 0 \"linear\" \"linear\" \"\" 1 1 0" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+
+} 

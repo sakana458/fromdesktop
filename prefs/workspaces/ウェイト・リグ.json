@@ -1,0 +1,358 @@
+{
+    "linkedMenu": "riggingMenuSet",
+    "linkedHotkey": "CraftsTab",
+    "selectedShelf": "Polygons",
+    "panels": [
+        {
+            "mainWindowPanel": false,
+            "posX": 2468,
+            "posY": 276,
+            "splitter": {
+                "orientation": "horizontal",
+                "children": [
+                    {
+                        "tabWidget": {
+                            "selectedIndex": 0,
+                            "controlWidth": 636,
+                            "controlHeight": 791,
+                            "collapsed": false,
+                            "controls": [
+                                {
+                                    "objectName": "AttributeEditor",
+                                    "title": "Attribute Editor",
+                                    "uiScript": "global string $gAttributeEditorForm; formLayout $gAttributeEditorForm;",
+                                    "retain": true,
+                                    "loadImmediately": true,
+                                    "checkPlugins": false,
+                                    "tabDirection": 0,
+                                    "closed": false
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "mainWindowPanel": true,
+            "splitter": {
+                "orientation": "vertical",
+                "children": [
+                    {
+                        "tabWidget": {
+                            "selectedIndex": 0,
+                            "controlWidth": 1916,
+                            "controlHeight": 23,
+                            "collapsed": false,
+                            "controls": [
+                                {
+                                    "objectName": "StatusLine",
+                                    "title": "Status Line",
+                                    "uiScript": "global string $gStatusLineForm; formLayout $gStatusLineForm;",
+                                    "retain": true,
+                                    "loadImmediately": true,
+                                    "checkPlugins": false,
+                                    "tabDirection": 0,
+                                    "closed": false
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "tabWidget": {
+                            "selectedIndex": 0,
+                            "controlWidth": 1916,
+                            "controlHeight": 64,
+                            "collapsed": false,
+                            "controls": [
+                                {
+                                    "objectName": "Shelf",
+                                    "title": "Shelf",
+                                    "uiScript": "global string $gShelfForm; formLayout $gShelfForm;",
+                                    "retain": true,
+                                    "loadImmediately": true,
+                                    "checkPlugins": false,
+                                    "tabDirection": 0,
+                                    "closed": false
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "splitter": {
+                            "orientation": "horizontal",
+                            "children": [
+                                {
+                                    "tabWidget": {
+                                        "selectedIndex": 0,
+                                        "controlWidth": 40,
+                                        "controlHeight": 756,
+                                        "collapsed": false,
+                                        "controls": [
+                                            {
+                                                "objectName": "ToolBox",
+                                                "title": "Tool Box",
+                                                "uiScript": "global string $gToolboxForm; formLayout $gToolboxForm;",
+                                                "retain": true,
+                                                "loadImmediately": true,
+                                                "checkPlugins": false,
+                                                "tabDirection": 0,
+                                                "closed": false
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "splitter": {
+                                        "orientation": "vertical",
+                                        "children": [
+                                            {
+                                                "tabWidget": {
+                                                    "selectedIndex": 0,
+                                                    "controlWidth": 561,
+                                                    "controlHeight": 720,
+                                                    "collapsed": false,
+                                                    "controls": [
+                                                        {
+                                                            "objectName": "Outliner",
+                                                            "title": "Outliner",
+                                                            "uiScript": "outlinerPanel -menuBarVisible true -label panelLabel Outliner",
+                                                            "retain": true,
+                                                            "loadImmediately": true,
+                                                            "checkPlugins": false,
+                                                            "tabDirection": 0,
+                                                            "closed": false
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            {},
+                                            {
+                                                "tabWidget": {
+                                                    "selectedIndex": 0,
+                                                    "controlWidth": 460,
+                                                    "controlHeight": 788,
+                                                    "collapsed": true,
+                                                    "controls": [
+                                                        {
+                                                            "objectName": "ToolSettings",
+                                                            "title": "Tool Settings",
+                                                            "uiScript": "global string $gToolSettingsForm; formLayout $gToolSettingsForm;",
+                                                            "retain": true,
+                                                            "loadImmediately": true,
+                                                            "checkPlugins": false,
+                                                            "tabDirection": 2,
+                                                            "closed": false
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "splitter": {
+                                        "orientation": "vertical",
+                                        "children": [
+                                            {
+                                                "tabWidget": {
+                                                    "selectedIndex": 0,
+                                                    "controlWidth": 1284,
+                                                    "controlHeight": 454,
+                                                    "collapsed": false,
+                                                    "controls": [
+                                                        {
+                                                            "objectName": "MainPane",
+                                                            "title": "viewPanes",
+                                                            "uiScript": "global string $gMainPane; paneLayout -nbg 0 $gMainPane;",
+                                                            "retain": true,
+                                                            "loadImmediately": true,
+                                                            "checkPlugins": false,
+                                                            "tabDirection": 0,
+                                                            "closed": false
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "tabWidget": {
+                                                    "selectedIndex": 1,
+                                                    "controlWidth": 1267,
+                                                    "controlHeight": 296,
+                                                    "collapsed": false,
+                                                    "controls": [
+                                                        {
+                                                            "objectName": "nodeEditorPanel1Window",
+                                                            "title": "Node Editor",
+                                                            "uiScript": "if(!`panel -q -exists nodeEditorPanel1`) {\n\tint $menusOkayInPanels = `optionVar -q allowMenusInPanels`;\n\tstring $panelName = \"nodeEditorPanel1\";\n\tscriptedPanel -unParent  -type \"nodeEditorPanel\" -l (localizedPanelLabel(\"Node Editor\")) -mbv $menusOkayInPanels  nodeEditorPanel1;\n\n\t\t\t$editorName = ($panelName+\"NodeEditorEd\");\n            nodeEditor -e \n                -allAttributes 0\n                -allNodes 0\n                -autoSizeNodes 1\n                -consistentNameSize 1\n                -createNodeCommand \"nodeEdCreateNodeCommand\" \n                -defaultPinnedState 0\n                -additiveGraphingMode 0\n                -settingsChangedCallback \"nodeEdSyncControls\" \n                -traversalDepthLimit -1\n                -keyPressCommand \"nodeEdKeyPressCommand\" \n                -nodeTitleMode \"name\" \n                -gridSnap 0\n                -gridVisibility 1\n                -popupMenuScript \"nodeEdBuildPanelMenus\" \n                -showNamespace 1\n                -showShapes 1\n                -showSGShapes 0\n                -showTransforms 1\n                -useAssets 1\n                -syncedSelection 1\n                -extendToShapes 1\n                -activeTab -1\n                -editorMode \"default\" \n                $editorName;\n} else {\n\tscriptedPanel -e -unParent nodeEditorPanel1;\n}\nscriptedPanel -e -parent nodeEditorPanel1Window nodeEditorPanel1;\n",
+                                                            "retain": false,
+                                                            "loadImmediately": false,
+                                                            "checkPlugins": false,
+                                                            "tabDirection": 2,
+                                                            "closed": false
+                                                        },
+                                                        {
+                                                            "objectName": "shapePanel1Window",
+                                                            "title": "Shape Editor",
+                                                            "uiScript": "if(!`panel -q -exists shapePanel1`) {\n\tint $menusOkayInPanels = `optionVar -q allowMenusInPanels`;\n\tstring $panelName = \"shapePanel1\";\n\tshapePanel -unParent -l (localizedPanelLabel(\"Shape Editor\")) -mbv $menusOkayInPanels  shapePanel1;\n} else {\n\tshapePanel -e -unParent shapePanel1;\n}\nshapePanel -e -parent shapePanel1Window shapePanel1;\n",
+                                                            "retain": false,
+                                                            "loadImmediately": false,
+                                                            "checkPlugins": false,
+                                                            "tabDirection": 2,
+                                                            "closed": false
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {},
+                                {
+                                    "tabWidget": {
+                                        "selectedIndex": 1,
+                                        "controlWidth": 439,
+                                        "controlHeight": 756,
+                                        "collapsed": true,
+                                        "controls": [
+                                            {
+                                                "objectName": "ChannelBoxLayerEditor",
+                                                "title": "Channel Box / Layer Editor",
+                                                "uiScript": "global string $gChannelsLayersForm; formLayout $gChannelsLayersForm;",
+                                                "retain": true,
+                                                "loadImmediately": true,
+                                                "checkPlugins": false,
+                                                "tabDirection": 3,
+                                                "closed": false
+                                            },
+                                            {
+                                                "objectName": "outlinerPanel10Window",
+                                                "title": "Outliner",
+                                                "uiScript": "if(!`panel -q -exists outlinerPanel10`) {\n\tint $menusOkayInPanels = `optionVar -q allowMenusInPanels`;\n\tstring $panelName = \"outlinerPanel10\";\n\toutlinerPanel -unParent -l (localizedPanelLabel(\"Outliner\")) -mbv $menusOkayInPanels  outlinerPanel10;\n\t$editorName = $panelName;\n    outlinerEditor -e \n        -showShapes 0\n        -showAssignedMaterials 0\n        -showTimeEditor 1\n        -showReferenceNodes 0\n        -showReferenceMembers 0\n        -showAttributes 0\n        -showConnected 0\n        -showAnimCurvesOnly 0\n        -showMuteInfo 0\n        -organizeByLayer 1\n        -showAnimLayerWeight 1\n        -autoExpandLayers 1\n        -autoExpand 0\n        -showDagOnly 1\n        -showAssets 1\n        -showContainedOnly 1\n        -showPublishedAsConnected 0\n        -showContainerContents 1\n        -ignoreDagHierarchy 0\n        -expandConnections 0\n        -showUpstreamCurves 1\n        -showUnitlessCurves 1\n        -showCompounds 1\n        -showLeafs 1\n        -showNumericAttrsOnly 0\n        -highlightActive 1\n        -autoSelectNewObjects 0\n        -doNotSelectNewObjects 0\n        -dropIsParent 1\n        -transmitFilters 0\n        -setFilter \"0\" \n        -showSetMembers 1\n        -allowMultiSelection 1\n        -alwaysToggleSelect 0\n        -directSelect 0\n        -displayMode \"DAG\" \n        -expandObjects 0\n        -setsIgnoreFilters 1\n        -containersIgnoreFilters 0\n        -editAttrName 0\n        -showAttrValues 0\n        -highlightSecondary 0\n        -showUVAttrsOnly 0\n        -showTextureNodesOnly 0\n        -attrAlphaOrder \"default\" \n        -animLayerFilterOptions \"allAffecting\" \n        -sortOrder \"none\" \n        -longNames 0\n        -niceNames 1\n        -showNamespace 1\n        -showPinIcons 0\n        -mapMotionTrails 0\n        -ignoreHiddenAttribute 0\n        -ignoreOutlinerColor 0\n        -renderFilterVisible 0\n        $editorName;\n} else {\n\toutlinerPanel -e -unParent outlinerPanel10;\n}\noutlinerPanel -e -parent outlinerPanel10Window outlinerPanel10;\n",
+                                                "retain": false,
+                                                "loadImmediately": false,
+                                                "checkPlugins": false,
+                                                "tabDirection": 3,
+                                                "closed": false
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "tabWidget": {
+                            "selectedIndex": 0,
+                            "controlWidth": 1916,
+                            "controlHeight": 34,
+                            "collapsed": false,
+                            "controls": [
+                                {
+                                    "objectName": "TimeSlider",
+                                    "title": "Time Slider",
+                                    "uiScript": "global string $gTimeSliderForm; formLayout $gTimeSliderForm;",
+                                    "retain": true,
+                                    "loadImmediately": true,
+                                    "checkPlugins": false,
+                                    "tabDirection": 0,
+                                    "closed": false
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "tabWidget": {
+                            "selectedIndex": 0,
+                            "controlWidth": 1916,
+                            "controlHeight": 29,
+                            "collapsed": false,
+                            "controls": [
+                                {
+                                    "objectName": "RangeSlider",
+                                    "title": "Range Slider",
+                                    "uiScript": "global string $gPlaybackRangeForm; formLayout $gPlaybackRangeForm;",
+                                    "retain": true,
+                                    "loadImmediately": true,
+                                    "checkPlugins": false,
+                                    "tabDirection": 0,
+                                    "closed": false
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "tabWidget": {
+                            "selectedIndex": 0,
+                            "controlWidth": 1916,
+                            "controlHeight": 28,
+                            "collapsed": false,
+                            "controls": [
+                                {
+                                    "objectName": "CommandLine",
+                                    "title": "Command Line",
+                                    "uiScript": "global string $gCommandLineForm; formLayout $gCommandLineForm;",
+                                    "retain": true,
+                                    "loadImmediately": true,
+                                    "checkPlugins": false,
+                                    "tabDirection": 0,
+                                    "closed": false
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "tabWidget": {
+                            "selectedIndex": 0,
+                            "controlWidth": 1916,
+                            "controlHeight": 20,
+                            "collapsed": false,
+                            "controls": [
+                                {
+                                    "objectName": "HelpLine",
+                                    "title": "Help Line",
+                                    "uiScript": "global string $gHelpLineForm; formLayout $gHelpLineForm;",
+                                    "retain": true,
+                                    "loadImmediately": true,
+                                    "checkPlugins": false,
+                                    "tabDirection": 0,
+                                    "closed": false
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "mainWindowPanel": false,
+            "posX": 2335,
+            "posY": 108,
+            "splitter": {
+                "orientation": "horizontal",
+                "children": [
+                    {
+                        "tabWidget": {
+                            "selectedIndex": 0,
+                            "controlWidth": 1428,
+                            "controlHeight": 888,
+                            "collapsed": false,
+                            "controls": [
+                                {
+                                    "objectName": "hyperShadePanel1Window",
+                                    "title": "Hypershade",
+                                    "uiScript": "if(!`panel -q -exists hyperShadePanel1`) {\n\tint $menusOkayInPanels = `optionVar -q allowMenusInPanels`;\n\tstring $panelName = \"hyperShadePanel1\";\n\tscriptedPanel -unParent  -type \"hyperShadePanel\" -l (localizedPanelLabel(\"Hypershade\")) -mbv $menusOkayInPanels  hyperShadePanel1;\n} else {\n\tscriptedPanel -e -unParent hyperShadePanel1;\n}\nscriptedPanel -e -parent hyperShadePanel1Window hyperShadePanel1;\n",
+                                    "retain": false,
+                                    "loadImmediately": false,
+                                    "checkPlugins": false,
+                                    "tabDirection": 0,
+                                    "closed": false
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

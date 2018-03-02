@@ -1,0 +1,1599 @@
+//--------------------------------------------------------------------------
+//
+// ScriptName : AriRenamer
+// Contents   : 複数のノードをテキストエディタ感覚でリネームします。
+// Author     : Ari
+// Since      : 2014/08
+// LastUpdate : 2017/12/06 アンダーバーで始まるノード名等ををエラーと判断したので修正
+//              2017/01/29 一括変更、連番挿入をしやすいようにUIを少し変更。
+//                         アルファベット連番機能追加。
+//              2016/04/10 複数のオブジェクトが名前と一致エラーを回避
+//                         複数のfileノードが同じテクスチャを参照している場合のエラーを回避
+//              2016/01/25 fileノードが参照するテクスチャファイルの名前を変更する機能を追加。
+//              2015/08/23 fileノードのパスをリネームする機能を追加。
+//              2015/06/24 条件機能:末尾数字の桁数を統一する機能を追加。
+//              2015/06/09 結果非表示の場合のバグ修正。
+//              2015/06/07 Shapeノードも取得できるように変更。
+//                         条件機能:Shapeノードを親ノードから予測できる通常名にするを追加。
+//                         条件機能:語尾の数字を消すを追加。
+//              2015/05/11 「追加」「削除」機能を追加
+//              2015/03/16 検索取得機能修正。(同名があった場合親の名前も拾ってしまったものを修正)
+//              2015/03/15 検索取得機能追加。
+//                         条件リネーム(:前方削除、fileノードテクスチャ名取得)追加。
+//                         リザルト表示改良。
+//                         デフォルト名リネーム回避。
+//              2015/01/15 リザルト表示追加。
+//                         リストからオブジェクト選択機能追加。
+//              2014/11/24 連番の入力数値を保持
+//              2014/11/02 連番、置換、挿入などの機能を追加。かなり改造。改バージョン公開。
+//              -----------------------------------------------------------
+//              2014/08/12 エラー回避(グループの深い階層からリネーム)
+//              2014/08    旧リネーマー公開
+//
+//--------------------------------------------------------------------------
+
+
+
+proc string AriRenamer_ToText(string $textList[],int $mode){
+	
+	string $exText;
+	
+	int $amount = 0;
+	int $maxText = size($textList);
+	
+	
+	for($text in $textList){
+		
+		if($mode==0)$text=AriRenamer_ShortName($text);
+		$exText=($exText+$text+"\n");
+	}
+	return $exText;
+}
+proc string[] AriRenamer_DeleteType(string $nameList[],string $type){
+	string $refreshList[];
+	int $j=0;
+	for($i=0;$i<size($nameList);$i++){
+		if (!`objectType -isType $type $nameList[$i]`){
+			$refreshList[$j]=$nameList[$i];
+			$j++;
+		}
+	}
+	return $refreshList;
+}
+proc AriRenamer_leftFieldImput(string $list[]){
+	global string $AriRename_History[50];
+	global string $AriRename_ReHistory[50];
+	global string $AriRenameScrollField[3];
+	textScrollList -e -ra $AriRenameScrollField[2];
+	if(size($list)>0){
+		string $evalString = "textScrollList -e";
+		for($obj in $list){
+			$evalString = $evalString +" -a \""+$obj+ "\"";
+		}
+		$evalString = $evalString + $AriRenameScrollField[2];
+		eval $evalString;
+	}
+	clear $AriRename_History;
+	clear $AriRename_ReHistory;
+}
+proc string[] AriRenamer_NumberSeparate(string $beforeName,int $mode){
+	string $afterName[];
+	int $nameSize=size($beforeName);
+	int $breakNum1=0;
+	int $breakNum2=0;
+	for($i=0;$i<$nameSize;$i++){
+		string $end=(substring($beforeName , $nameSize-$i ,$nameSize-$i));		
+		if(`gmatch $end ("[0-9]")`){
+			$breakNum1=$i+1;
+		}
+		else{
+			break;
+		}
+		if(`gmatch $end ("[1-9]")`){
+			$breakNum2=$i+1;
+		}
+	}
+	string $stringString;
+	string $stringNumber;
+	if($mode==0){
+		$stringString=startString ($beforeName,$nameSize-$breakNum1);
+	    $stringNumber=endString ($beforeName,$breakNum1);
+	}
+	if($mode==1){
+		$stringString=startString ($beforeName,$nameSize-$breakNum2);
+	    $stringNumber=endString ($beforeName,$breakNum2);
+	}
+	$afterName[0]=$stringString;
+	$afterName[1]= $stringNumber;
+	return $afterName;
+}
+proc int AriRenamer_unRenameNode(string $name){
+	int $unRenameTrue=0;
+	string $unRenameNode[]={
+			 "time1", 
+			 "sequenceManager1", 
+			 "renderPartition", 
+			 "renderGlobalsList1", 
+			 "defaultLightList1", 
+			 "defaultShaderList1", 
+			 "postProcessList1", 
+			 "defaultRenderUtilityList1", 
+			 "defaultRenderingList1", 
+			 "lightList1", 
+			 "defaultTextureList1", 
+			 "lambert1", 
+			 "particleCloud1", 
+			 "initialShadingGroup", 
+			 "initialParticleSE", 
+			 "initialMaterialInfo", 
+			 "shaderGlow1", 
+			 "dof1", 
+			 "defaultRenderGlobals", 
+			 "defaultRenderQuality", 
+			 "defaultResolution", 
+			 "defaultLightSet", 
+			 "defaultObjectSet", 
+			 "defaultViewColorManager", 
+			 "hardwareRenderGlobals", 
+			 "hardwareRenderingGlobals", 
+			 "characterPartition", 
+			 "defaultHardwareRenderGlobals", 
+			 "ikSystem", 
+			 "hyperGraphInfo", 
+			 "hyperGraphLayout", 
+			 "globalCacheControl", 
+			 "strokeGlobals", 
+			 "dynController1", 
+			 "persp", 
+			 "perspShape", 
+			 "top", 
+			 "topShape", 
+			 "front", 
+			 "frontShape", 
+			 "side", 
+			 "sideShape", 
+			 "lightLinker1", 
+			 "DefaultMaterialsAndShaderGlowFilter7", 
+			 "selectionListOperator84", 
+			 "DefaultMaterialsFilter9", 
+			 "DefaultShaderGlowFilter9", 
+			 "objectTypeFilter96", 
+			 "layerManager", 
+			 "defaultLayer", 
+			 "renderLayerManager", 
+			 "defaultRenderLayer"
+	};
+	$unRenameTrue=stringArrayContains($name,$unRenameNode);
+	return $unRenameTrue;
+}
+global proc AriRenamer_imput(int $mode){
+	global string $AriRename_History[50];
+	global string $AriRename_ReHistory[50];
+	global string $AriRenameScrollField[3];
+	global string $AriRenameInputField[5];
+	global string $AriRenameCheckBox[5];
+	global string $AriRenamerButton[10];
+	global string $AriRenameModeView;
+	string $leftList[];
+	string $rightList[];
+	if($mode==1){
+		$leftList = `textScrollList -q -ai $AriRenameScrollField[2]`;
+		string $textOne=`scrollField -q -text $AriRenameScrollField[1]`;
+		$rightList = AriRenamer_textToArray($textOne);
+	}
+	int $renameMode=0;
+	$renameMode=`intField -q -v $AriRenameModeView`;
+	if($renameMode==0) button -e -l "Rename" -bgc 1 1 0.2   $AriRenamerButton[0];
+	if($renameMode==1) button -e -l "Link"   -bgc 1 0.6 0.3 $AriRenamerButton[0];
+	if($renameMode==2) button -e -l "Rename" -bgc 1 0 0     $AriRenamerButton[0];
+	if($renameMode==3){
+			button -e -l "ファイル" -ann "選択したノードを取得リスト一覧に追加" -bgc 1 0 0.5 -c "AriRenamer_imput(0)" $AriRenamerButton[1];
+			button -e -l "Rename" -bgc 1 0 1   $AriRenamerButton[0];
+	}
+	else	button  -e -label "取得" -ann "選択したノードを取得リスト一覧に追加" -bgc 0 0.8 0.5 -c "AriRenamer_imput(0)" $AriRenamerButton[1];
+	string $text = `textField -q -text $AriRenameInputField[2]`;
+	string $selectList[];
+	if($renameMode==0)$selectList=`ls -sl`;
+	if($renameMode==1 || $renameMode==2)$selectList=`ls -sl -type "file"`;
+	string $selectShapeList[];
+	if($renameMode==0)$selectShapeList=`ls -sl -s`;
+	if($text != "" && size($selectList)==0){	
+		$selectList=`ls`; 
+	}
+	if($text != ""){	
+		string $searchList[];
+		int $i=0;
+		for($node in $selectList){
+			string $baseNode=$node;
+			string $sepa[];
+			tokenize $node "|" $sepa;
+			if(size($sepa)>=2){
+				$baseNode=$sepa[size($sepa)-1];
+			}
+			if($text!="|"){ 
+				if(`gmatch $baseNode ("*"+$text+"*")`){
+					$searchList[$i]=$node;
+					$i++;
+				}
+			}
+			else{
+				if(size($sepa)>=2){
+					$searchList[$i]=$node;
+					$i++;					
+				}
+			}
+		}
+		$selectList = $searchList;
+		select -ne $selectList;	
+		$selectShapeList=`ls -sl -s`;
+	}
+	if(!`checkBox -q -v $AriRenameCheckBox[1]`){
+		if(size($selectShapeList)>0){
+			$selectList = stringArrayRemove($selectShapeList, $selectList);
+		}
+	}
+	string $newLeftList[];
+	string $newRightList[];
+	if($mode==0){
+		$newLeftList=$selectList;
+		$newRightList=$selectList;
+	}
+	if($mode==1){
+		$selectList = stringArrayRemove($leftList, $selectList);
+		$newLeftList = stringArrayCatenate($leftList, $selectList);
+		$newRightList = stringArrayCatenate($rightList, $selectList);
+	}
+	AriRenamer_leftFieldImput($newLeftList);
+	if($renameMode==0){
+		scrollField -e -text (AriRenamer_ToText($newRightList,0)) $AriRenameScrollField[1];
+		$AriRename_History[0] = (AriRenamer_ToText($newRightList,0));
+	}
+	if($renameMode==1 || $renameMode==2)	{
+		string $pathList[];
+		int $i=0;
+		for($file in $selectList){
+			$pathList[$i]=`getAttr ($file+".fileTextureName")`;
+			if($renameMode==2){
+				string $sepa[];
+				tokenize $pathList[$i] "/" $sepa;
+				$pathList[$i] = $sepa[size($sepa)-1];
+			}
+			$i++;
+		}
+		scrollField -e -text (AriRenamer_ToText($pathList,0)) $AriRenameScrollField[1];
+		$AriRename_History[0] = (AriRenamer_ToText($pathList,0));
+	}
+	select -ne $selectList;
+	textField -e -text "" $AriRenameInputField[2];
+	print (size($selectList)+" 取得\n");
+}
+global proc AriRenamer_ListExclude(){
+	global string $AriRenameScrollField[3];
+	global string $AriRename_History[50];
+	string $selectObj[] = `textScrollList -q -si $AriRenameScrollField[2]`;
+	int $num[]=`textScrollList -q -sii $AriRenameScrollField[2]`;
+	string $textOne=`scrollField -q -text $AriRenameScrollField[1]`;
+	string $rightList[];
+	$rightList=AriRenamer_textToArray($textOne);
+	int $i=0;
+	for($i=size($num)-1 ; $i>=0 ;$i--){
+		textScrollList -e -rii $num[$i] $AriRenameScrollField[2];
+	}
+	string $reRightList[];
+	int $j=0;
+	$i=0;
+	for($text in $rightList){
+		int $numTrue=0;
+		for($number in $num){
+			if($j==$number-1)$numTrue=1;
+		}
+		if(!$numTrue){
+			$reRightList[$i]=$text;
+			$i++;
+		}
+		$j++;
+	}
+	scrollField -e -text (AriRenamer_ToText($reRightList,0)) $AriRenameScrollField[1];
+	clear $AriRename_History;
+	$AriRename_History[0]=(AriRenamer_ToText($reRightList,0));
+}
+proc AriRenamer_writeScrollField(string $textList[]){
+	global string $AriRename_History[50];
+	global string $AriRenameScrollField[2];
+	string $endtext = AriRenamer_ToText($textList,0);
+	string $nowtext = `scrollField -q -text $AriRenameScrollField[1]`;
+	if($nowtext!=$endtext || $nowtext!=""){
+		if($AriRename_History[0]!=$nowtext){
+			for($i=size($AriRename_History);$i>0;$i--){
+				if($i<50)	$AriRename_History[$i]=$AriRename_History[$i-1];
+			}
+			$AriRename_History[0]=$nowtext;
+		}
+	}
+	for($i=size($AriRename_History);$i>0;$i--){
+		if($i<50)	$AriRename_History[$i]=$AriRename_History[$i-1];
+	}
+	$AriRename_History[0]=$endtext;
+	scrollField -e -text $endtext $AriRenameScrollField[1];
+}
+global proc AriRenamer_TexRenameUI_GO(int $mode){
+	global string $AriRenamer_TexRenameCB[2];
+	int $trueA = `checkBox -q -v $AriRenamer_TexRenameCB[0]`;
+	int $trueB = `checkBox -q -v $AriRenamer_TexRenameCB[1]`;
+	layoutDialog -dismiss ($mode+"_"+$trueA+"_"+$trueB);
+}
+global proc AriRenamer_TexRenameUI()
+{
+	global string $AriRenamer_TexRenameCB[2];
+    string $form = `setParent -q`;
+    formLayout -e -width 300 $form;
+	string $column1 = `columnLayout`;
+		$AriRenamer_TexRenameCB[0] = `checkBox -l "コピーをリネーム (オリジナルの保持)" -v 1`;
+		$AriRenamer_TexRenameCB[1] = `checkBox -l "file のパスも変更" -v 1`;
+	setParent..;
+	string $buttonOK     = `button -h 40 -label "Rename" -c "AriRenamer_TexRenameUI_GO(1)"`;
+	string $buttonCancel = `button -h 40 -label "Cancel" -c "AriRenamer_TexRenameUI_GO(0)"`;
+    formLayout -edit
+	-af	$column1  "top"    0
+	-af $column1  "left"   0
+	-ac $buttonOK "top" 20 $column1
+	-af $buttonOK "left"  0
+	-ap $buttonOK "right" 0 50
+	-ac $buttonCancel "top" 20 $column1
+	-ac $buttonCancel "left"  0 $buttonOK
+	-ap $buttonCancel "right" 0 100
+	$form;
+}
+global proc AriRenamer_RenameGO(){
+	global string $AriRenameScrollField[3];
+	global string $AriRenameCheckBox[5];
+	global string $AriRenameModeView;
+	global string $AriRenamer_TexRenameCB[2];
+	int $renameMode=`intField -q -v $AriRenameModeView`;
+	string $baseList[];
+	string $renameList[];
+	int $resultW=`checkBox -q -v $AriRenameCheckBox[0]`;
+	optionVar -iv "AriRenamerResultCheckBox" $resultW;
+	string $cLayout[3];
+	string $list1=`scrollField -q -text $AriRenameScrollField[1]`;
+	$renameList = AriRenamer_textToArray($list1);
+	$baseList = `textScrollList -q -ai $AriRenameScrollField[2]`;
+	string $selectList[];
+	int $i=0;
+	for($obj in $baseList){	
+		if(objExists($obj)){
+			$selectList[$i] = $obj;
+			$i++;
+		}
+	}
+	select -ne $selectList;
+	if(size($selectList)==0)return;
+	string $referencedList[]=`ls -rn -sl`;
+	string $baseLongList[]=`ls -sl -long`;
+	int $amount = 0;
+	int $maxText = size($baseLongList);
+	progressWindow -title "Rename..." -progress $amount -status ("0 / "+ $maxText) -isInterruptable false;
+	if($renameMode==0){
+		int $groupDepth[];
+		int $maxDepth;
+		for($i=0;$i<size($baseLongList);$i++){
+			string $sepa[];
+			$groupDepth[$i]=`tokenize $baseLongList[$i] "|" $sepa`;
+			$maxDepth=`max $maxDepth $groupDepth[$i]`;	
+		}
+		string $resultNameList[];
+		int 	$errorPattern[];
+		string  $errorPatternString[];
+		$errorPatternString[0]="";
+		$errorPatternString[1]="別階層に同名存在(リネーム時の瞬間)";
+		$errorPatternString[2]="システムが自動的にリネーム";
+		$errorPatternString[12]="同じ為変更なし";
+		$errorPatternString[13]="空白の為変更なし";
+		$errorPatternString[14]="新しい名前には正当な文字がない為変更なし";
+		$errorPatternString[15]="デフォルトノードの為変更なし";
+		$errorPatternString[16]="リファレンスの為変更なし";
+		$errorPatternString[17]="ロックされたノードの為変更なし";
+		$errorPatternString[10]="存在しないので除外";
+		for($j=$maxDepth;$j>0;$j--){
+			for($i=0;$i<size($baseLongList);$i++){
+				if($groupDepth[$i]!=$j)continue;
+				if ( `progressWindow -query -isCancelled` ) break;
+				progressWindow -edit -progress (int(($amount*1.0)/$maxText*100)) -status ($amount+" / "+$maxText);
+				$amount++;
+				string $resultName;
+				string $sepa[];
+				int $warning=0;
+				int $widthSize=160;
+				$text_baseName[$i]=$baseLongList[$i];
+				$text_resultName[$i]=$renameList[$i];
+				if(!objExists($baseLongList[$i])){	
+					$errorPattern[$i]=10;
+					print "存在なし\n";
+					continue;
+				}
+				if($baseLongList[$i] == $renameList[$i]){	
+					$errorPattern[$i]=12;
+					print  "同じ為変更なし\n";
+					continue;
+				}
+				if(endsWith ($baseLongList[$i] , ("|"+$renameList[$i]) )){	
+					$errorPattern[$i]=12;
+					print "同じ為変更なし\n";
+					continue;
+				}
+				if($renameList[$i]=="%" || $renameList[$i]==""){	
+					$errorPattern[$i]=13;
+					print "空白のため変更なし\n";
+					continue;
+				}
+				/*
+				if(0==isValidObjectName($renameList[$i])){
+					$errorPattern[$i]=14;
+					print "有効名ではない為変更なし\n";
+					continue;
+				}
+				*/
+				if(AriRenamer_unRenameNode($baseLongList[$i])){
+					$errorPattern[$i]=15;
+					print "デフォルトノードの為変更なし\n";
+					continue;			
+				}
+				if(stringArrayContains($baseLongList[$i],$referencedList)){
+					$errorPattern[$i]=16;
+					print "リファレンスの為変更なし\n";
+					continue;
+				}
+				int $lockTrue[]=`lockNode -q -l $baseLongList[$i]`;
+				if($lockTrue[0]){
+					$errorPattern[$i]=17;
+					print "ロックされたノードの為変更なし\n";
+					continue;
+				}
+				if(catch($resultName = `rename $baseLongList[$i] $renameList[$i]`)){
+					$errorPattern[$i]=14;
+					print "新しい名前には正当な文字が為変更なし\n";
+					continue;
+				}
+				$resultNameList[$i]=$resultName;
+				print ($baseLongList[$i]+" >>> "+$resultName+"\n");
+				if($renameList[$i] == $resultName){
+					$errorPattern[$i]=0;
+				}
+				else{
+					if(endsWith ($resultName , ("|"+$renameList[$i]) )){
+						$errorPattern[$i]=1;
+					}
+					else{
+						$errorPattern[$i]=2;
+					}
+				}
+			}
+		}
+		if($resultW){
+			if((`window -ex  AriRenamerResult`)==true)deleteUI AriRenamerResult;
+			window -title "AriRenamerResult"  -w 200 -h 100 AriRenamerResult;
+			scrollLayout;
+			string $form =`formLayout -w 1400`;
+			string $paneLay=`paneLayout -ps 1 15 100 -ps 2 15 100 -ps 3 20 100  -configuration "vertical4"`;
+			if($renameMode == 1)paneLayout -e -ps 1 10 100 -ps 2 15 100 -ps 3 30 100 $paneLay;
+			$cLayout[0]=`columnLayout -adj true`;
+			if($renameMode == 0)text -l "ベース名";
+			setParent..;
+			$cLayout[1]=`columnLayout -adj true`;
+			if($renameMode == 0)text -l "入力名";
+			setParent..;
+			$cLayout[2]=`columnLayout -adj true`;
+			if($renameMode == 0)text -l "結果";
+			setParent..;
+			$cLayout[3]=`columnLayout -adj true`;
+			if($renameMode == 0)text -l "";
+			setParent..;
+			formLayout -edit
+			-af $paneLay "top"   0
+			-af $paneLay "left"   0
+			-af $paneLay "right" 0
+			-af $paneLay "bottom" 0
+			$form;
+			for($i=0;$i<size($baseList);$i++){
+				int $error=$errorPattern[$i];
+				string $resultText=$resultNameList[$i];
+				if($error>=10){
+					$resultText=$baseList[$i];
+				}
+				string $texF1=`textField -p $cLayout[0] -w 60 -ed 0 -en 1 -text $baseList[$i]`;
+				string $texF2=`textField -p $cLayout[1] -w 60 -ed 0 -en 1 -text $renameList[$i]`;
+				string $texF3=`textField -p $cLayout[2] -w 60 -ed 0 -en 1 -text $resultText`;
+				string $texF4=`textField -p $cLayout[3] -w 60 -ed 0 -en 1 -text ($errorPatternString[$error])`;
+				if($error==0)textField -e -bgc 0.6 0.8 1 $texF3;
+				if($error==10)textField -e -bgc 1 0.2 0.2 $texF3;
+				if($error==2){
+					textField -e -en 1 $texF2;
+					textField -e -bgc 1 1 0 $texF3;
+				}
+				if($error>=14)textField -e -bgc 1 1 0 $texF3;
+			}
+			showWindow;
+		}
+	}
+	progressWindow -endProgress;
+	if($renameMode==1){
+		string  $resultNameList[];
+		int 	$errorPattern[];
+		string  $errorPatternString[];
+		$errorPatternString[0]="";
+		$errorPatternString[1]="別階層に同名存在(リネーム時の瞬間)";
+		$errorPatternString[2]="システムが自動的にリネーム";
+		$errorPatternString[11]="ロックされている為変更不可";
+		$errorPatternString[12]="同パス";
+		$errorPatternString[13]="空白の為変更なし";
+		$errorPatternString[14]="有効名ではない為変更なし";
+		$errorPatternString[15]="デフォルトノードの為変更なし";
+		$errorPatternString[16]="リファレンスの為変更なし";
+		$errorPatternString[17]="ロックされたノードの為変更なし";
+		$errorPatternString[10]="存在しないので除外";
+		$errorPatternString[20]="リンクなしの為変更なし";
+		$errorPatternString[21]="リンクなし強制変更";
+		$errorPatternString[30]="キャンセル";
+		for($i=0; $i<size($renameList); $i++){
+			$renameList[$i] = substituteAllString($renameList[$i], "\\", "/");
+		}
+		int $linkMode=0;
+		string $beforePathList[];
+		for($i=0; $i<size($baseList); $i++){
+			print ($baseList[$i] + " " + $renameList[$i] + "\n");
+			if($linkMode==3){
+				$errorPattern[$i]=30;
+				print "キャンセル\n";
+				continue;
+			}
+			if(!objExists($baseList[$i])){
+				$errorPattern[$i]=10;
+				print "存在なし\n";
+				continue;
+			}
+			$beforePathList[$i]=`getAttr ($baseList[$i]+".fileTextureName")`;
+			if($renameList[$i] == $beforePathList[$i]){
+				$errorPattern[$i]=12;
+				print "同パス\n";
+				continue;
+			}
+			if(`getAttr -l ($baseList[$i]+".fileTextureName")`){
+				$errorPattern[$i]=11;
+				print "ロック\n";
+				continue;
+			}
+			if(!`filetest -f ($renameList[$i])`){
+				print "リンクなし\n";
+				string $dia;
+				if($linkMode==0){
+					$dia=`confirmDialog -m ($renameList[$i]+"\nは存在しません パスを変更しますか？") -button "はい" -button "以降はい" -button "いいえ" -button "以降いいえ" -button "キャンセル" -defaultButton "はい" -cancelButton "キャンセル"`;
+					if($dia=="はい")$errorPattern[$i]=21;;
+					if($dia=="以降はい")$linkMode=1;
+					if($dia=="いいえ"){
+						$errorPattern[$i]=20;
+						continue;
+					}
+					if($dia=="以降いいえ")$linkMode=2;
+					if($dia=="キャンセル")$linkMode=3;
+				}
+				if($linkMode==1)$errorPattern[$i]=21;
+				if($linkMode==2){
+					$errorPattern[$i]=20;
+					continue;
+				}
+				if($linkMode==3){
+					$errorPattern[$i]=30;
+					continue;
+				}
+			}
+			setAttr -type "string" ($baseList[$i]+".fileTextureName") $renameList[$i];
+		}
+		if($resultW){
+			if((`window -ex  AriRenamerResult`)==true)deleteUI AriRenamerResult;
+			window -title "AriRenamerResult"  -w 200 -h 100 AriRenamerResult;
+			scrollLayout;
+			string $form =`formLayout -w 1400`;
+			string $paneLay=`paneLayout -ps 1 15 100 -ps 2 15 100 -ps 3 20 100  -configuration "vertical4"`;
+			if($renameMode == 1)paneLayout -e -ps 1 10 100 -ps 2 15 100 -ps 3 30 100 $paneLay;
+			$cLayout[0]=`columnLayout -adj true`;
+			if($renameMode == 0)text -l "ベース名";
+			setParent..;
+			$cLayout[1]=`columnLayout -adj true`;
+			if($renameMode == 0)text -l "入力名";
+			setParent..;
+			$cLayout[2]=`columnLayout -adj true`;
+			if($renameMode == 0)text -l "結果";
+			setParent..;
+			$cLayout[3]=`columnLayout -adj true`;
+			if($renameMode == 0)text -l "";
+			setParent..;
+			formLayout -edit
+			-af $paneLay "top"   0
+			-af $paneLay "left"   0
+			-af $paneLay "right" 0
+			-af $paneLay "bottom" 0
+			$form;
+			for($i=0; $i<size($baseList); $i++){
+				int $error=$errorPattern[$i];
+				string $resultText=$renameList[$i];
+				if($error==10 || $error==30){
+					$resultText="";
+				}
+				if( $error==11 || $error==20 || $error==30){
+					$resultText=$beforePathList[$i];
+				}
+				string $texF1=`textField -p $cLayout[0] -w 60 -h 24 -ed 0 -en 1 -text $baseList[$i]`;
+				string $texF2=`textField -p $cLayout[1] -w 60 -h 24 -ed 0 -en 1 -text $beforePathList[$i]`;
+				string $texF3;
+				rowLayout -p $cLayout[2]  -nc 2 -adj 1 -h 24;
+					$texF3=`textField  -w 60 -ed 0 -en 1 -text $resultText`;
+					button -h 20 -l "Open" -c ("AriRenamer_DireOpen(\""+$resultText+"\")");
+				setParent..;
+				string $texF4=`textField -p $cLayout[3] -w 60 -h 24 -ed 0 -en 1 -text ($errorPatternString[$error])`;
+				if($error==0 )textField -e -bgc 0.6 0.8 1 $texF3;
+				if($error==11 || $error==20)textField -e -bgc 1 1 0 $texF3;
+				if($error==10 || $error==21)textField -e -bgc 1 0.4 0.4 $texF3;
+				if($error==30)textField -e -bgc 0.2 0.2 0.2 $texF3;
+			}
+			showWindow;
+		}
+	}
+	if($renameMode==2){
+		string $texDireList[];
+		string $beforeTexFullList[];
+		string $beforeTexList[];
+		string $newTexFullList[];
+		string  $resultNameList[];
+		int 	$errorPattern[];
+		string  $errorPatternString[];
+		int $copyTrue=1;
+		int $linkTrue=1;
+		string $dia="1_1_1";
+		$dia=`layoutDialog -t "TextureRename" -ui "AriRenamer_TexRenameUI"`;
+		string $sepaUI[];
+		tokenize $dia "_" $sepaUI;
+		if($sepaUI[1]=="0")$copyTrue=0;
+		if($sepaUI[1]=="1")$copyTrue=1;
+		if($sepaUI[2]=="0")$linkTrue=0;
+		if($sepaUI[2]=="1")$linkTrue=1;
+		if($sepaUI[0]!="1")return;
+		/*
+		$dia=`confirmDialog -m ("コピーをリネームしますか？") -button "コピーリネーム" -button "リネーム" -button "キャンセル" -defaultButton "コピーリネーム" -cancelButton "キャンセル"`;
+		if($dia=="コピーリネーム")	$copyTrue=1;
+		if($dia=="リネーム")		$copyTrue=0;
+		if($dia=="キャンセル")		return;
+		$dia=`confirmDialog -m ("fileパスも変更しますか？") -button "はい" -button "いいえ" -button "キャンセル" -defaultButton "はい" -cancelButton "キャンセル"`;
+		if($dia=="はい")		$linkTrue=1;
+		if($dia=="いいえ")		$linkTrue=0;
+		if($dia=="キャンセル")	return;
+		*/
+		$errorPatternString[0]="";
+		$errorPatternString[10]="fileノード存在なし";
+		$errorPatternString[11]="テクスチャ存在なし(リンク切れ)";
+		$errorPatternString[12]="変更なし";
+		$errorPatternString[20]="すでに存在";
+		$errorPatternString[21]="すでに存在リネームなしパスのみ変更";
+		$errorPatternString[30]="失敗";
+		$errorPatternString[40]="fileロックでリンク変更不可のためリネームもなし";
+		clear $beforeTexFullList;
+		for($i=0; $i<size($baseList); $i++){
+			$beforeTexFullList[$i]=`getAttr ($baseList[$i]+".fileTextureName")`;
+		}
+		string $untreatedFullList[]=$beforeTexFullList;
+		for($i=0; $i<size($baseList); $i++){
+			$untreatedFullList[$i]="-";
+			int $renameTrue=1;
+			string $sepa[];
+			tokenize $beforeTexFullList[$i] "/" $sepa;
+			$texDireList[$i]=startString ($beforeTexFullList[$i],size($beforeTexFullList[$i])-size($sepa[size($sepa)-1]));
+			$beforeTexList[$i]=$sepa[size($sepa)-1];
+			$newTexFullList[$i]=$texDireList[$i]+$renameList[$i];
+			string $beforeTex = $beforeTexFullList[$i];
+			string $afterTex  = $newTexFullList[$i];
+			$resultNameList[$i]=$renameList[$i];
+			if(!objExists($baseList[$i])){
+				$errorPattern[$i]=10;
+				print "存在なし\n";
+				continue;
+			}
+			if(!`filetest -f $beforeTex`){
+				$errorPattern[$i]=11;
+				$resultNameList[$i]="";
+				print "リンク切れ\n";
+				continue;
+			}
+			if($beforeTex==$afterTex){
+				$errorPattern[$i]=12;
+				print "変更なし\n";
+				continue;
+			}
+			if(`filetest -f $afterTex`){
+				if($linkTrue==0){
+					$errorPattern[$i]=20;
+					print "すでに存在\n";
+					continue;
+				}
+				if($linkTrue==1){
+					$errorPattern[$i]=21;
+					$renameTrue=0;
+					print "すでに存在リネームなしリンクのみ\n";
+				}
+			}
+			if($linkTrue==1){
+				if(`getAttr -l ($baseList[$i]+".fileTextureName")`){
+					$errorPattern[$i]=40;
+					print "ロック\n";
+					continue;
+				}
+			}
+			print "未処理リスト\n";
+			print $untreatedFullList;
+			print "\n";
+			int $renameResultTrue=1;
+			if($renameTrue){
+				print("Rename  "+$beforeTex+" >>> "+$afterTex);
+				if($copyTrue==1 || stringArrayContains($beforeTex,$untreatedFullList)){
+					$renameResultTrue=`sysFile -copy $afterTex $beforeTex`;	
+					print(" Copy\n");
+				}
+				else{
+					$renameResultTrue=`sysFile -ren $afterTex $beforeTex`;	
+					print(" \n");
+				}
+			}
+			if($linkTrue==1){
+				setAttr -type "string" ($baseList[$i]+".fileTextureName") $afterTex;
+			}
+			if(!$renameResultTrue){
+				$errorPattern[$i]=30;
+				print "リネーム失敗\n";
+			}
+		}
+		if($resultW){
+			if((`window -ex  AriRenamerResult`)==true)deleteUI AriRenamerResult;
+			window -title "AriRenamerResult"  -w 200 -h 100 AriRenamerResult;
+			scrollLayout;
+			string $form =`formLayout -w 1400`;
+			string $paneLay=`paneLayout -ps 1 15 100 -ps 2 15 100 -ps 3 20 100  -configuration "vertical4"`;
+			if($renameMode == 1)paneLayout -e -ps 1 10 100 -ps 2 15 100 -ps 3 30 100 $paneLay;
+			$cLayout[0]=`columnLayout -adj true`;
+			if($renameMode == 0)text -l "ベース名";
+			setParent..;
+			$cLayout[1]=`columnLayout -adj true`;
+			if($renameMode == 0)text -l "入力名";
+			setParent..;
+			$cLayout[2]=`columnLayout -adj true`;
+			if($renameMode == 0)text -l "結果";
+			setParent..;
+			$cLayout[3]=`columnLayout -adj true`;
+			if($renameMode == 0)text -l "";
+			setParent..;
+			formLayout -edit
+			-af $paneLay "top"   0
+			-af $paneLay "left"   0
+			-af $paneLay "right" 0
+			-af $paneLay "bottom" 0
+			$form;
+			for($i=0; $i<size($baseList); $i++){
+				int $error=$errorPattern[$i];
+				string $texF1=`textField -p $cLayout[0] -w 60 -h 24 -ed 0 -en 1 -text $baseList[$i]`;
+				string $texF2=`textField -p $cLayout[1] -w 60 -h 24 -ed 0 -en 1 -text $beforeTexList[$i]`;
+				string $texF3;
+				rowLayout -p $cLayout[2]  -nc 2 -adj 1 -h 24;
+					$texF3=`textField  -w 60 -ed 0 -en 1 -text $resultNameList[$i]`;
+					button -h 20 -l "Open" -c ("AriRenamer_DireOpen(\""+$newTexFullList[$i]+"\")");
+				setParent..;
+				string $texF4=`textField -p $cLayout[3] -w 60 -h 24 -ed 0 -en 1 -text ($errorPatternString[$error])`;
+				if($error==0 )textField -e -bgc 0.6 0.8 1 $texF3;
+				if($error==20 || $error==21)textField -e -bgc 1 1 0 $texF3;
+				if($error==11 || $error==10 || $error==20 || $error==30 || $error==40)textField -e -bgc 1 0.4 0.4 $texF3;
+			}
+			showWindow;
+		}
+	}
+	if($resultW){
+	}
+	AriRenamer_imput(0);
+}
+global proc AriRenamer_DireOpen(string $directory){
+	$directory = substituteAllString($directory, "/", "\\");
+	system ("explorer.exe /select,"+$directory);
+}
+global proc AriRenamer_Undo(){
+	global string $AriRename_History[50];
+	global string $AriRename_ReHistory[50];
+	global string $AriRenameScrollField[2];
+	int $localPos[2] = AriRenamer_CursorPos();
+	string $nowtext=`scrollField -q -text $AriRenameScrollField[1]`;
+	if($nowtext != $AriRename_History[0]){
+		scrollField -e -text $AriRename_History[0] $AriRenameScrollField[1];
+		AriRenamer_CursorPosMove($localPos[0],$localPos[1]);
+		return;
+	}
+	if(size($AriRename_History)==1)return;
+	scrollField -e -text $AriRename_History[1] $AriRenameScrollField[1];
+	AriRenamer_CursorPosMove($localPos[0],$localPos[1]);
+	for($i=size($AriRename_ReHistory);$i>0;$i--){
+		if($i<50)	$AriRename_ReHistory[$i]=$AriRename_ReHistory[$i-1];
+	}
+	$AriRename_ReHistory[0]=$AriRename_History[0];
+	for($i=0;$i<size($AriRename_History);$i++){
+		if($i<50)	$AriRename_History[$i]=$AriRename_History[$i+1];
+	}
+	$AriRename_History[size($AriRename_History)-1]="";
+	string $histry_work[]=$AriRename_History;
+	clear $AriRename_History;
+	for($i=0;$i<size($histry_work)-1;$i++){
+		$AriRename_History[$i]=$histry_work[$i];
+	}
+}
+global proc string AriRenamer_NumberString(int $num,int $digits){
+	string $beforeNum=($num+"");
+	string $afterNum;
+	int $numPlus=$digits-size($beforeNum);
+	$afterNum=$beforeNum;
+	for($i=0;$i<$numPlus;$i++){
+		$afterNum="0"+$afterNum;
+	}
+	return $afterNum;
+}
+global proc string AriRenamer_AlphabetString(int $num,int $mode){
+	int $nowNum=$num-1;
+	string $outString = "";
+	string $alphabetA[] ={"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"};
+	string $alphabetB[] ={"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+	if($nowNum<0)$nowNum=0;
+	$nowNum = $nowNum%26;
+	if($mode==0) $outString = $alphabetA[$nowNum];
+	if($mode==1) $outString = $alphabetB[$nowNum];
+	return $outString;
+}
+global proc AriRenamer_numbering_GO(){
+	global string $AriRenameScrollField[2];
+	int $localPos[2] = AriRenamer_CursorPos();
+	string $textOne    = `scrollField -q -text $AriRenameScrollField[1]`;
+	string $textList[] = AriRenamer_textToArray($textOne);
+	string $renameTextList[];
+	$renameTextList=$textList;
+	int $pos=0;
+	int $startNum=1;
+	int $digits=3;
+	int $alphabetMode=0;
+	if(`optionVar -exists "AriRenamerNumPos"`)		$pos          = `optionVar -q "AriRenamerNumPos"`;
+	if(`optionVar -exists "AriRenamerNumStartNum"`)	$startNum     = `optionVar -q "AriRenamerNumStartNum"`;
+	if(`optionVar -exists "AriRenamerNumFigure"`)	$digits       = `optionVar -q "AriRenamerNumFigure"`;
+	if(`optionVar -exists "AriRenamerNumAlphabet"`)	$alphabetMode = `optionVar -q "AriRenamerNumAlphabet"`;
+	int $nowNum = $startNum;
+	string $reTextList[];
+	int $i=0;
+	if($pos==0){
+		for($text in $renameTextList){
+			string $number;
+			if($alphabetMode==0) $number = AriRenamer_NumberString($nowNum,$digits);
+			if($alphabetMode==1) $number = AriRenamer_AlphabetString($nowNum,0);
+			if($alphabetMode==2) $number = AriRenamer_AlphabetString($nowNum,1);
+			$reTextList[$i] = $text+$number;
+			$nowNum++;
+			$i++;
+		}
+	}
+	if($pos==1){
+		for($text in $renameTextList){
+			string $number;
+			if($alphabetMode==0) $number = AriRenamer_NumberString($nowNum,$digits);
+			if($alphabetMode==1) $number = AriRenamer_AlphabetString($nowNum,0);
+			if($alphabetMode==2) $number = AriRenamer_AlphabetString($nowNum,1);
+			$reTextList[$i]=	startString($text,$localPos[1])
+								+$number
+								+endString($text,size($text)-$localPos[1]);
+			$nowNum++;
+			$i++;
+		}
+	}
+	if($pos==2){
+		int $y=$localPos[0]-1;
+		int $x=$localPos[1];
+		int $backPos = size($renameTextList[$y])-$x;
+		for($text in $renameTextList){
+			string $number;
+			if($alphabetMode==0) $number = AriRenamer_NumberString($nowNum,$digits);
+			if($alphabetMode==1) $number = AriRenamer_AlphabetString($nowNum,0);
+			if($alphabetMode==2) $number = AriRenamer_AlphabetString($nowNum,1);
+			$reTextList[$i]=	startString($text,size($text)-$backPos)
+								+$number
+								+endString($text,$backPos);
+			$nowNum++;
+			$i++;
+		}
+	}
+	AriRenamer_writeScrollField($reTextList);
+}
+global proc AriRenamer_numbering_Save_GO(int $closeTrue){
+	global string $AriReNumber_field[3];
+	global string $AriReNumber_radio[7];
+	int $startNum =`intField -q -v $AriReNumber_field[0]`;
+	int $digits     =`intField -q -v $AriReNumber_field[1]`;
+	int $numberPos=0;
+	if(`radioButton -q -select $AriReNumber_radio[0]`)$numberPos=0;
+	if(`radioButton -q -select $AriReNumber_radio[1]`)$numberPos=1;
+	if(`radioButton -q -select $AriReNumber_radio[2]`)$numberPos=2;
+	int $alphabetMode=0;
+	if(`radioButton -q -select $AriReNumber_radio[3]`)$alphabetMode=0;
+	if(`radioButton -q -select $AriReNumber_radio[4]`)$alphabetMode=1;
+	if(`radioButton -q -select $AriReNumber_radio[5]`)$alphabetMode=2;
+	optionVar -iv "AriRenamerNumPos"      $numberPos;
+	optionVar -iv "AriRenamerNumStartNum" $startNum;
+	optionVar -iv "AriRenamerNumFigure"   $digits;
+	optionVar -iv "AriRenamerNumAlphabet" $alphabetMode;
+	if($closeTrue)	deleteUI AriRenamer_numbering;
+	else 			AriRenamer_numbering_GO();
+}
+global proc AriRenamer_replace_window(){
+	global string $AriRenameScrollField[2];
+	global string $AriReText_field[3];
+	string $selectString=`scrollField -q -selection $AriRenameScrollField[1]`;
+	if((`window -ex  AriRenamer_replace`)==true)deleteUI AriRenamer_replace;
+	window -title "置換"  -w 200 -h 100 AriRenamer_replace;
+	columnLayout;
+	rowLayout -nc 2;
+		text -l "置換前:";
+		$AriReText_field[0]=`textField -w 200 -tx $selectString`;
+	setParent..;
+	rowLayout -nc 2;
+		text -l "置換後:";
+		$AriReText_field[1]=`textField -w 200 `;
+	setParent..;
+	rowLayout -nc 2;
+	text -w 140 -l "";
+	button -w 100 -l "置換" -c"AriRenamer_replace_GO";
+	setParent..;
+	showWindow;
+}
+global proc AriRenamer_replace_GO(){
+	global string $AriRenameScrollField[2];
+	global string $AriReText_field[3];
+	string $beforeString=`textField -q -text $AriReText_field[0]`;
+	string $afterString =`textField -q -text $AriReText_field[1]`;
+	if(size(strip($beforeString))==0)return;
+	int $localPos[2] = AriRenamer_CursorPos();
+	string $textOne=`scrollField -q -text $AriRenameScrollField[1]`;
+	string $textList[];
+	$textList=AriRenamer_textToArray($textOne);
+	int $strSize=size($beforeString);
+	string $reTextList[];
+	int $i=0;
+	for($text in $textList){
+		int $k=0;
+		$reTextList[$i]=$text;
+		for($j=1;$j<size($reTextList[$i])-$strSize+2;$j++){
+			string $sub=substring ($reTextList[$i],$j,$j-1+$strSize);
+			if($sub==$beforeString){
+				$reTextList[$i]=	startString($reTextList[$i],$j-1)
+									+$afterString
+									+endString($reTextList[$i],size($reTextList[$i])-($j-1+$strSize));
+				$j=$j+(size($afterString)-1);
+			}
+			$k++;
+			if($k>200)break;
+		}
+		$i++;
+	}
+	AriRenamer_writeScrollField($reTextList);
+	AriRenamer_CursorPosMove($localPos[0],$localPos[1]);
+	deleteUI AriRenamer_replace;
+}
+global proc AriRenamer_insertion(){
+	global string $AriRenameScrollField[3];
+	global string $AriRenameInputField[5];
+	global string $AriRename_radio[5];
+	int $localPos[2] = AriRenamer_CursorPos();
+	string $textOne=`scrollField -q -text $AriRenameScrollField[1]`;
+	string $textList[];
+	$textList=AriRenamer_textToArray($textOne);
+	string $inputString=`textField -q -tx $AriRenameInputField[1]`;
+	string $reTextList[];
+	int $i=0;
+	if(`radioButton -q -select $AriRename_radio[0]`){
+		for($text in $textList){
+			$reTextList[$i]=	startString($text,$localPos[1])
+								+$inputString
+								+endString($text,size($text)-$localPos[1]);
+			$i++;
+		}
+	}
+	if(`radioButton -q -select $AriRename_radio[1]`){
+		int $y=$localPos[0]-1;
+		int $x=$localPos[1];
+		int $backPos = size($textList[$y])-$x;
+		for($text in $textList){
+			$reTextList[$i]=	startString($text,size($text)-$backPos)
+								+$inputString
+								+endString($text,$backPos);
+			$i++;
+		}
+	}
+	AriRenamer_writeScrollField($reTextList);
+	AriRenamer_CursorPosMove($localPos[0],$localPos[1]+size($inputString));
+}
+global proc AriRenamer_allChange_window(){
+	global string $AriRenameScrollField[2];
+	global string $AriReText_field[3];
+	global string $AriRenameInputField[5];
+	string $selectString=`scrollField -q -selection $AriRenameScrollField[1]`;
+	if((`window -ex  AriRenamer_allChange_window`)==true)deleteUI AriRenamer_allChange_window;
+	window -title "全変換"  -w 200 -h 100 AriRenamer_allChange_window;
+	columnLayout;
+	frameLayout -cl 0 -cll 1 -l "直接入力" -w 210;
+	columnLayout;
+		rowLayout -nc 2;
+			$AriRenameInputField[0]=`textField -w 200 -tx $selectString`;
+		setParent..;
+		rowLayout -nc 2;
+			text -w 120 -l "";
+			button -w 80 -l "全変換" -c"AriRenamer_allChange()";
+		setParent..;
+	setParent..;
+	setParent..;
+	showWindow;
+}
+global proc AriRenamer_allChange_windowGO(){
+	global string $AriRenameScrollField[2];
+	global string $AriRenameInputField[5];
+	string $inputString=`textField -q -tx $AriRenameInputField[0]`;
+	if(size(strip($inputString))==0)return;
+	string $textList[] = `textScrollList -q -ai $AriRenameScrollField[2]`;;
+	string $reTextList[];
+	int $i=0;
+	for($text in $textList){
+		$reTextList[$i]=$inputString;
+		$i++;
+	}
+	AriRenamer_writeScrollField($reTextList);
+	deleteUI AriRenamer_allChange_window;
+}
+global proc AriRenamer_allChange(){
+	global string $AriRenameScrollField[2];
+	global string $AriRenameInputField[5];
+	string $inputString=`textField -q -tx $AriRenameInputField[1]`;
+	if(size(strip($inputString))==0)return;
+	string $textList[] = `textScrollList -q -ai $AriRenameScrollField[2]`;;
+	string $reTextList[];
+	int $i=0;
+	for($text in $textList){
+		$reTextList[$i]=$inputString;
+		$i++;
+	}
+	AriRenamer_writeScrollField($reTextList);
+}
+global proc AriRenamer_Select(int $mode){
+	global string $AriRenameScrollField[3];
+	if($mode==1){
+		string $selectList[] = `textScrollList -q -si $AriRenameScrollField[2]`;
+		select -cl;
+		for($sel in $selectList){
+			if( `objExists $sel` ){
+				select -ne -add $sel;
+			}
+		}
+	}
+	int $num[]=`textScrollList -q -sii $AriRenameScrollField[2]`;
+	if(size($num)==0)return;
+	AriRenamer_CursorPosMove($num[size($num)-1],0);
+	setFocus $AriRenameScrollField[1];
+}
+global proc AriRenamer_ObjSelect(){
+	global string $AriRenameScrollField[3];
+	string $selectObj[]=`ls -sl`;
+	textScrollList -e -da $AriRenameScrollField[2];
+	string $allList[]=`textScrollList -q -allItems $AriRenameScrollField[2]`;
+	for($obj in $selectObj){
+		if( stringArrayContains($obj,$allList)){
+			textScrollList -e -selectItem $obj $AriRenameScrollField[2];
+		}
+	}
+}
+global proc AriRenamer_DefName(){
+	global string $AriRenameScrollField[3];
+	string $selectObj[] = `textScrollList -q -si $AriRenameScrollField[2]`;
+	int $num[]=`textScrollList -q -sii $AriRenameScrollField[2]`;
+	string $textOne=`scrollField -q -text $AriRenameScrollField[1]`;
+	string $rightList[];
+	$rightList=AriRenamer_textToArray($textOne);
+	int $i=0;
+	for($obj in $selectObj){
+		$rightList[$num[$i]-1] = $obj;
+		$i++;
+	}
+	AriRenamer_writeScrollField($rightList);
+	AriRenamer_Select(1);
+}
+global proc string AriRenamer_ShortName(string $name){
+	string $sepa[];
+	tokenize $name "|" $sepa;
+	return $sepa[size($sepa)-1];
+}
+global proc string[] AriRenamer_textToArray(string $text){
+	string $array[];
+	string $beforeString="\n\n";
+	string $afterString="\n%\n";
+	int $strSize=size($beforeString);
+	int $k=0;
+	for($j=1;$j<size($text)-$strSize+2;$j++){
+		string $sub=substring ($text,$j,$j-1+$strSize);
+		if($sub==$beforeString){
+			$text=	startString($text,$j-1)
+						+$afterString
+						+endString($text,size($text)-($j-1+$strSize));
+			$j=$j+(size($afterString)-3);
+		}
+		$k++;
+		if($k>10000)break;
+	}
+	tokenize $text "\n" $array;
+	int $i=0;
+	for($i=0;$i<size($array);$i++){
+		if($array[$i]=="%")$array[$i]="";
+	}
+	if(size($array)==1 && $array[0]=="")clear $array;
+	return $array;
+}
+global proc AriRenamer_DelBs(int $mode){
+	global string $AriRenameScrollField[2];
+	int $localPos[2] = AriRenamer_CursorPos();
+	int $amount = 0;
+	string $textOne=`scrollField -q -text $AriRenameScrollField[1]`;
+	string $textList[];
+	$textList=AriRenamer_textToArray($textOne);
+	int $maxText = size($textList);
+	string $delList[];
+	int $i=0;
+	if($mode==0){
+		for($text in $textList){
+			$delList[$i]=startString($text,$localPos[1]);
+			$delList[$i]=$delList[$i]+endString($text,size($text)-$localPos[1]-1);
+			if(size($delList[$i])==0)$delList[$i]=$text;
+			$i++;
+		}
+	}
+	if($mode==1){
+		int $y=$localPos[0]-1;
+		int $x=$localPos[1];
+		int $backPos = size($textList[$y])-$x;
+		for($text in $textList){
+			$delList[$i]=startString($text,size($text)-$backPos-1);
+			$delList[$i]=$delList[$i]+endString($text,$backPos);
+			if(size($delList[$i])==0)$delList[$i]=$text;
+			$i++;
+		}
+		if($localPos[1]>1)$localPos[1]=$localPos[1]-1;
+	}
+	AriRenamer_writeScrollField($delList);
+	AriRenamer_CursorPosMove($localPos[0],$localPos[1]);
+}
+global proc int[] AriRenamer_CursorPos(){
+	global string $AriRenameScrollField[2];
+	int $localPos[2];
+	int $globalPos= `scrollField -q -ip $AriRenameScrollField[1]`;
+	string $textOne=`scrollField -q -text $AriRenameScrollField[1]`;
+	string $textList[];
+	$textList=AriRenamer_textToArray($textOne);
+	int $work=$globalPos;
+	int $i=1;
+	for($text in $textList){
+		$work=$work-size($text)-1;
+		if($work<0){
+			$localPos[1]=$work+size($text);
+			$localPos[0]=$i;
+			if($localPos[1]==-1){
+				$localPos[0]=$localPos[0]-1;
+				$localPos[1]=size($textList[$i-2]);
+			}
+			break;
+		}
+		$i++;
+	}
+	if($localPos[0]==0){
+		$localPos[0]=size($textList);
+		if($localPos[0]!=0){
+			$localPos[1]=size($textList[$localPos[0]-1]);
+		}
+	}
+	return $localPos;
+}
+global proc AriRenamer_CursorPosMove(int $y,int $x){
+	int $globalPos=0;
+	global string $AriRenameScrollField[2];
+	string $textOne=`scrollField -q -text $AriRenameScrollField[1]`;
+	string $textList[];
+	$textList=AriRenamer_textToArray($textOne);
+	int $total=1;
+	int $i=0;
+	while($i<$y-1){
+		$total=$total+size($textList[$i])+1;
+		$i++;
+	}
+	$globalPos=$total+$x;
+	scrollField -e -ip $globalPos $AriRenameScrollField[1];
+}
+global proc AriRenamer_Condition_GO(int $mode){
+	global string $AriRenameScrollField[2];
+	global string $AriRenameInputField[5];
+	string $baseList[] = `textScrollList -q -ai $AriRenameScrollField[2]`;
+	if(size($baseList)==0)return;
+	string $textOne=`scrollField -q -text $AriRenameScrollField[1]`;
+	string $textList[]=AriRenamer_textToArray($textOne);
+	string $renameList[];
+	int $i=0;
+	for($obj in $textList){
+		string $sepa[];
+		tokenize $obj ":" $sepa;
+		if(size($sepa)>=2)	$renameList[$i] = $sepa[size($sepa)-1];
+		else $renameList[$i] = $textList[$i];
+		$i++;
+	}
+	AriRenamer_writeScrollField($renameList);
+}
+global proc AriRenamer_Condition_FileName(int $mode){
+	global string $AriRenameScrollField[2]; 
+	string $textList[] = `textScrollList -q -ai $AriRenameScrollField[2]`;
+	if(size($textList)==0)return;
+	string $afterTextList[]=$textList;
+	if($mode==0 || $mode==1){
+		for($i=0;$i<size($textList);$i++){
+			if(nodeType($textList[$i])=="file"){
+				string $texture=`getAttr ($textList[$i]+".fileTextureName")`;
+				if($texture=="") continue;
+				if($mode==0)$afterTextList[$i] = basenameEx($texture);
+				if($mode==1){
+					$afterTextList[$i] = basename($texture,"");
+					$afterTextList[$i] = substituteAllString ( $afterTextList[$i],".","_");
+				}
+			}
+		}
+	}
+	if($mode==2){
+		for($i=0;$i<size($textList);$i++){
+			if(nodeType($textList[$i])=="transform"){
+				string $parents[]=`listRelatives -p $textList[$i]`;
+				if($parents[0]!=""){
+					$afterTextList[$i]=$parents[0];
+				}
+			}
+		}
+	}
+	AriRenamer_writeScrollField($afterTextList);
+}
+global proc AriRenamer_Condition_shapeName(int $mode){
+	global string $AriRenameScrollField[2];
+	string $baseList[] = `textScrollList -q -ai $AriRenameScrollField[2]`;
+	if(size($baseList)==0)return;
+	string $textOne=`scrollField -q -text $AriRenameScrollField[1]`;
+	string $textList[]=AriRenamer_textToArray($textOne);
+	select $baseList;
+	string $selectShapeList[]=`ls -sl -s`;
+	select $selectShapeList;
+	string $afterTextList[]=$textList;
+	int $i=0;
+	for($text in $baseList){
+		if(stringArrayContains($text,$selectShapeList)){
+			string $parent[]=`listRelatives -p $text`;
+			string $after[]=AriRenamer_NumberSeparate($parent[0],$mode);
+			$afterTextList[$i] = ($after[0]+"Shape"+$after[1]);
+		}
+		$i++;
+	}
+	AriRenamer_writeScrollField($afterTextList);
+}
+global proc AriRenamer_Condition_backNumberDel(){
+	global string $AriRenameScrollField[2];
+	global string $AriRenameInputField[5];
+	string $baseList[] = `textScrollList -q -ai $AriRenameScrollField[2]`;
+	if(size($baseList)==0)return;
+	string $textOne=`scrollField -q -text $AriRenameScrollField[1]`;
+	string $textList[]=AriRenamer_textToArray($textOne);
+	string $renameList[];
+	int $i=0;
+	for($obj in $textList){
+		string $after[]=AriRenamer_NumberSeparate($obj,0);
+		$renameList[$i]=$after[0];
+		$i++;
+	}
+	AriRenamer_writeScrollField($renameList);
+}
+global proc AriRenamer_Condition_NumberDouble(){
+	global string $AriRenameScrollField[2];
+	global string $AriRenameInputField[5];
+	global string $AriRenamer_Condition_intField;
+	int $digits = `intField -q -v $AriRenamer_Condition_intField`;
+	optionVar -iv "AriRenamerDigits" $digits;
+	string $baseList[] = `textScrollList -q -ai $AriRenameScrollField[2]`;
+	if(size($baseList)==0)return;
+	string $textOne=`scrollField -q -text $AriRenameScrollField[1]`;
+	string $textList[]=AriRenamer_textToArray($textOne);
+	string $renameList[];
+	int $i=0;
+	for($obj in $textList){
+		string $after[]=AriRenamer_NumberSeparate($obj,0);
+		$renameList[$i]=$after[0];
+		int $num=0;
+		if($after[1]!=""){
+			$num=int($after[1]);
+		}
+		string $numString=($num+"");
+		int $loopTotal=$digits-size($numString);
+		for($j=0;$j<$loopTotal;$j++){
+			$renameList[$i]=$renameList[$i]+"0";
+		}
+		$renameList[$i]=$renameList[$i]+$num;
+		$i++;
+	}
+	AriRenamer_writeScrollField($renameList);
+	deleteUI AriRenamer_Condition_NumberDouble_Window;
+}
+global proc AriRenamer_Condition_NumberDouble_intChange(int $value){
+	global string $AriRenamer_Condition_intField;
+	intField -e -v $value $AriRenamer_Condition_intField;
+}
+global proc AriRenamer_Condition_NumberDouble_Window(){
+	global string $AriRenamer_Condition_intField;
+	int $digits = 3;
+	if(`optionVar -exists "AriRenamerDigits"`)$digits = `optionVar -q "AriRenamerDigits"`;
+	if((`window -ex  AriRenamer_Condition_NumberDouble_Window`)==true)deleteUI AriRenamer_Condition_NumberDouble_Window;
+	window -title "末尾数字桁数統一"  -w 100 -h 50 -tlb true AriRenamer_Condition_NumberDouble_Window;
+	columnLayout;
+	text -l "桁数";
+	rowLayout -nc 2;
+	$AriRenamer_Condition_intField = `intField  -v $digits -w 50`;
+	iconTextButton -i "arrowDown.png";
+		popupMenu -button 1 ;
+		menuItem -l "1"  -c "AriRenamer_Condition_NumberDouble_intChange(1)";
+		menuItem -l "2"  -c "AriRenamer_Condition_NumberDouble_intChange(2)";
+		menuItem -l "3"  -c "AriRenamer_Condition_NumberDouble_intChange(3)";
+		menuItem -l "4"  -c "AriRenamer_Condition_NumberDouble_intChange(4)";
+		menuItem -l "5"  -c "AriRenamer_Condition_NumberDouble_intChange(5)";
+		menuItem -l "6"  -c "AriRenamer_Condition_NumberDouble_intChange(6)";
+		menuItem -l "7"  -c "AriRenamer_Condition_NumberDouble_intChange(7)";
+		menuItem -l "8"  -c "AriRenamer_Condition_NumberDouble_intChange(8)";
+		menuItem -l "9"  -c "AriRenamer_Condition_NumberDouble_intChange(9)";
+		menuItem -l "10" -c "AriRenamer_Condition_NumberDouble_intChange(10)";
+	setParent..;
+	button -w 100 -l "OK" -c "AriRenamer_Condition_NumberDouble()";
+	setParent..;
+	showWindow;
+}
+global proc AriRenamer_Condition_GroupName(){
+	global string $AriRenameScrollField[2];
+	string $baseList[] = `textScrollList -q -ai $AriRenameScrollField[2]`;
+	if(size($baseList)==0)return;
+	string $reTextList[];
+	int $i=0;
+	for($base in $baseList){
+		string $parents[] = `listRelatives -pa -p $base`;
+		string $parent = $parents[0];
+		if($parent != "")$reTextList[$i] = $parent;
+		else $reTextList[$i] = $base;
+		$i++;
+	}
+	AriRenamer_writeScrollField($reTextList);
+}
+global proc AriRenamer_modeChange(){
+	global string $AriRenameModeView;
+	global string $AriRenameScrollField[3];
+	global string $AriRenamer_OMenu[];
+	global string $AriRenamerPaneLayout;
+	int $mode;
+	$mode = `optionMenu -q -select $AriRenamer_OMenu[0]`;
+	$mode --;
+	int $paneSize = 50;
+	int $paneSizeList[] = `paneLayout -q -paneSize $AriRenamerPaneLayout`;
+	if($mode==1){
+		$paneSize = 25;
+	}
+	paneLayout -e -paneSize 1 $paneSize 100  $AriRenamerPaneLayout;
+	$baseList = `textScrollList -q -ai $AriRenameScrollField[2]`;
+	string $selectList[];
+	int $i=0;
+	for($obj in $baseList){	
+		if(objExists($obj)){
+			$selectList[$i] = $obj;
+			$i++;
+		}
+	}
+	select -ne $selectList;
+	intField -e -v $mode $AriRenameModeView;
+	AriRenamer_imput(0);
+}
+global proc AriRenamer_getConditionWindow(){
+	if((`window -ex  AriRenamer_getConditionWindow`)==true)deleteUI AriRenamer_getConditionWindow;
+	window -title "条件取得"  -w 200 -h 100 AriRenamer_getConditionWindow;
+	scrollLayout;
+	columnLayout;	
+	rowLayout -nc 2;
+	string $inputString=`textField -w 100 `;
+	button -w 100 -l "タイプ" -c "";
+	setParent..;
+	button -w 200 -l "| を含む (同名オブジェクト)" -c "";
+	button -w 200 -l ": を含む" -c "";
+	button -w 200 -h 25 -label "階層取得" -ann "階層の選択を行ってから取得" -c "SelectHierarchy; AriRenamer_imput(0);";
+	showWindow;
+}
+global proc AriRenamer_SetCondition_Window(){
+	global string $AriRenamer_conditionUI[10];
+	if((`window -ex  AriRenamer_SetCondition_Window`)==true)deleteUI AriRenamer_SetCondition_Window;
+	window -title "条件リネーム"  -w 200 -h 100 AriRenamer_SetCondition_Window;
+	scrollLayout -childResizable true;
+	columnLayout -adj true;
+	button -w 200 -l ": の前方消去" -c "AriRenamer_Condition_GO(1)" -ann " : が含まれていれば、 : の前方を消去します。";
+	separator -w 200;
+	button -w 200 -l "fileノードをテクスチャ名に" -c "AriRenamer_Condition_FileName(0)" -ann "fileノードであればテクスチャ名に変更します。";
+	button -w 200 -l "fileノードをテクスチャ名に拡張子付" -c "AriRenamer_Condition_FileName(1)" -ann "拡張子も付けます。( . は使用不可なので _ に)";
+	separator -w 200;
+	button -w 200 -l "末尾数字削除" -c "AriRenamer_Condition_backNumberDel()" -ann "末尾が数字だったらそれを消します。";
+	button -w 200 -l "末尾数字桁数統一" -c "AriRenamer_Condition_NumberDouble_Window()" -ann "末尾が数字だったら桁数を統一します。";
+	separator -w 200;
+	button -w 200 -l "shapeノードを親+Shape名に" -c "AriRenamer_Condition_shapeName(1)" -ann "親トランスフォーム名に従ってpCube001→pCube00Shape1の形にします。";
+	button -w 200 -l "グループ名に" -c "AriRenamer_Condition_GroupName()";
+	showWindow;
+}
+global proc AriRenamer_Numbering_Window(){
+	global string $AriReNumber_field[3];
+	global string $AriReNumber_radio[7];
+	global int $AriReRenban;
+	int $pos=0;
+	int $startNum=1;
+	int $digits=3;
+	int $alphabetMode=0;
+	if(`optionVar -exists "AriRenamerNumPos"`)		$pos = `optionVar -q "AriRenamerNumPos"`;
+	if(`optionVar -exists "AriRenamerNumStartNum"`)	$startNum = `optionVar -q "AriRenamerNumStartNum"`;
+	if(`optionVar -exists "AriRenamerNumFigure"`)	$digits = `optionVar -q "AriRenamerNumFigure"`;
+	if(`optionVar -exists "AriRenamerNumAlphabet"`)	$alphabetMode = `optionVar -q "AriRenamerNumAlphabet"`;
+	if((`window -ex  AriRenamer_numbering`)==true)deleteUI AriRenamer_numbering;
+	window -title "連番"  -w 200 -h 100 AriRenamer_numbering;
+	columnLayout;
+	radioCollection;
+	rowLayout -nc 3;
+		$AriReNumber_radio[3]=`radioButton -label "012"`;
+		$AriReNumber_radio[4]=`radioButton -label "abc"`;
+		$AriReNumber_radio[5]=`radioButton -label "ABC"`;
+	setParent..;
+	rowLayout -nc 4;
+		text -l "開始番号:";
+		$AriReNumber_field[0]=`intField -w 50 -v $startNum`;
+		text -l "  桁:";
+		$AriReNumber_field[1]=`intField -w 20 -v $digits`;
+	setParent..;
+    radioCollection;
+    	$AriReNumber_radio[0]=`radioButton -label "最後"`;
+		$AriReNumber_radio[1]=`radioButton -label "カーソル位置(前文字数一致)"`;
+    	$AriReNumber_radio[2]=`radioButton -label "カーソル位置(後文字数一致)"`;
+	button -w 160 -l "Save Close" -c "AriRenamer_numbering_Save_GO(1)";
+	button -w 160 -l "Apply" -c "AriRenamer_numbering_Save_GO(0)";
+	if($pos==0)	radioButton -e -select $AriReNumber_radio[0];
+	if($pos==1)	radioButton -e -select $AriReNumber_radio[1];
+	if($pos==2)	radioButton -e -select $AriReNumber_radio[2];
+	if($alphabetMode==0) radioButton -e -select $AriReNumber_radio[3];
+	if($alphabetMode==1) radioButton -e -select $AriReNumber_radio[4];
+	if($alphabetMode==2) radioButton -e -select $AriReNumber_radio[5];
+	showWindow;
+}
+global proc AriRenamer(){
+	global string $AriRenameScrollField[3];
+	global string $AriRenameInputField[5];
+	global string $AriRename_radio[5];
+	global string $AriRenameCheckBox[5];
+	global string $AriRenamer_OMenu[3];
+	global string $AriRenamerPaneLayout;
+	global string $AriRenamerButton[10];
+	global string $AriRenameModeView;
+	int $resultCheckBox=1;
+	if(`optionVar -exists "AriRenamerResultCheckBox"`)$resultCheckBox = `optionVar -q "AriRenamerResultCheckBox"`;
+	if((`window -ex  AriRenamer`)==true)deleteUI AriRenamer;
+	window -title "AriRenamer"  -w 200 -h 100 AriRenamer;
+	string $form =`formLayout`;
+		$AriRenamerPaneLayout = `paneLayout  -configuration "vertical2"`;
+				$AriRenameScrollField[2]=`textScrollList -font "fixedWidthFont"  -ams 1 -sc "AriRenamer_Select(1)" -dcc "AriRenamer_DefName()"`;
+				$AriRenameScrollField[1]=`scrollField `;
+		setParent..;
+		string $leftButtonG=`rowLayout -nc 7`;
+			columnLayout;
+				button  -w 60 -h 25 -label "階層取得" -c "SelectHierarchy; AriRenamer_imput(0);";
+				separator -h 4 -w 60 -st "in";
+				$AriRenameInputField[2]=`textField -w 60 -h 24 -cc "AriRenamer_imput(0)"`;
+				$AriRenamerButton[1] = `button  -w 60 -h 50 -label "取得" -ann "選択したノードを取得リスト一覧に追加" -bgc 0 0.8 0.5 -c "AriRenamer_imput(0)"`;
+			setParent..;
+			columnLayout;
+				button -w 60 -h 25 -l "追加" -c "AriRenamer_imput(1)" -ann "取得リストに追加します";
+				button -w 60 -h 25 -l "削除" -c "AriRenamer_ListExclude" -ann "取得リストから削除します";
+				text -h 25 -l "";
+				$AriRenameCheckBox[1]=`checkBox -w 60 -h 25 -l "shape" -v 0 -ann "shapeノードも読み込みます"`;
+			setParent..;
+			separator -hr 0 -h 100 ;
+		setParent..;
+		string $centerButtonG=`columnLayout -adj true`;
+			string $formB;
+			string $button[];
+			$formB=`formLayout`;
+				$button[0] = `button -w 105 -label "■ Del >" -ann "すべての行で カーソルより前にある文字数を保管し 後ろの文字を消去" -c "AriRenamer_DelBs(0)"`;
+				$button[1] = `button -w 105 -label "< BS ■" -ann "すべての行で カーソルより後ろにある文字数を保管し 前の文字を消去" -c "AriRenamer_DelBs(1)"`;
+				$button[2] = `button -w 60  -label "Undo" -ann "元に戻す" -c "AriRenamer_Undo()"`;
+			setParent..;
+			formLayout -e
+				-af $button[0] "left"  0             -ap $button[0] "right" 0 40
+				-ac $button[1] "left"  0 $button[0]  -af $button[1] "right" 70
+				-ac $button[2] "left"  0 $button[1]  -af $button[2] "right" 0 
+			$formB;
+			separator -h 3 -w 216 -st "in";
+			$formB = `formLayout`;
+				$AriRenameInputField[1] = `textField `;
+				$button[0]=`button -w 50 -l "挿入" -ann "入力した文字をカーソルの位置に挿入" -c "AriRenamer_insertion()"`;
+				$button[1]=`button -w 50 -l "一括" -ann "入力した文字をカーソルの位置に挿入" -c "AriRenamer_allChange()"`;
+			setParent..;
+			formLayout -e
+				-af $button[1] "right" 0
+				-ac $button[0] "right" 0 $button[1]
+				-af $AriRenameInputField[1] "left" 0
+				-ac $AriRenameInputField[1] "right" 0 $button[0]
+			$formB;
+			$formB = `formLayout`;
+			radioCollection;
+				$AriRename_radio[0]=`radioButton -ann "カーソルの位置を前から数え 全ての行で前から数えた位置に挿入" -label "前文字数一致" -select`;
+				$AriRename_radio[1]=`radioButton -ann "カーソルの位置を後ろから数え 全ての行で後ろから数えた位置に挿入" -label "後文字数一致"`;
+				string $numberButton = `button -w 50 -l "012" -c "AriRenamer_numbering_GO" -ann "連番を挿入します。右クリックで設定。"`;
+				popupMenu -button 3 ;
+				menuItem -l "設定"       -c "AriRenamer_Numbering_Window()";
+				menuItem -l "------------" ;
+				menuItem -l "末尾数字削除" -c "AriRenamer_Condition_backNumberDel()";
+				menuItem -l "末尾桁統一"   -c "AriRenamer_Condition_NumberDouble_Window()";
+				setParent..;
+			formLayout -e
+				-af $AriRename_radio[0] "left"  0
+				-ac $AriRename_radio[1] "left"  0 $AriRename_radio[0]
+				-af $numberButton "right" 0
+			$formB;
+			separator -h 3 -w 216 -st "in";
+			$formB=`formLayout`;
+				$button[0]=`button -w 50 -label "置換" -ann "置換を行うためのウィンドウを開く" -c "AriRenamer_replace_window()"`;
+				$button[3]=`button -w 50 -label "条件" -ann "" -c "AriRenamer_SetCondition_Window"`;
+			setParent..;
+			formLayout -e
+			-af $button[0] "left"  0             -ap $button[0] "right" 0 50
+			-ac $button[3] "left"  0 $button[0]  -ap $button[3] "right" 0 100
+			$formB;
+		setParent..;
+		string $rightButtonG=`rowLayout -nc 2`;
+		columnLayout;
+		$AriRenamer_OMenu[0] = `optionMenu -w 60 -h 24 -label "" -changeCommand "AriRenamer_modeChange()"`;
+				menuItem -label "Node";
+				menuItem -label "Path";
+				menuItem -label "Texture";
+			separator -h 3 -w 60 -st "in";
+			$AriRenameCheckBox[0] = `checkBox -v $resultCheckBox -h 24 -l "結果" -ann "リネーム結果ウィンドウを表示します"`;
+			$AriRenamerButton[0]=`button -w 60 -h 50 -bgc 1 1 0.2 -label "Rename" -ann "左フィールド名前のノードを右フィールドの名前にリネーム" -c "AriRenamer_RenameGO()"`;
+		setParent..;
+		columnLayout;
+			radioCollection;
+				$AriRenameModeView = `intField -vis 0 -v 0 -w 40 `;
+				text -h 25 -l "";
+			setParent..;
+		setParent..;
+		setParent..;
+	setParent..;
+	formLayout -edit
+		-af $leftButtonG "bottom" 0
+		-af $leftButtonG "left"   0
+		-af $rightButtonG "bottom"  0
+		-af $rightButtonG "right"   0
+		-af $centerButtonG "bottom" 0
+		-ac $centerButtonG "right"  0 $rightButtonG 
+		-ac $centerButtonG "left"   0 $leftButtonG
+		-af $AriRenamerPaneLayout "top"   0
+		-af $AriRenamerPaneLayout "left"   0
+		-af $AriRenamerPaneLayout "right" 0
+		-ac $AriRenamerPaneLayout "bottom" 0 $leftButtonG
+		$form;
+	showWindow;
+	AriRenamer_imput(0);
+	scriptJob -p "AriRenamer" -event "SelectionChanged" "AriRenamer_ObjSelect";
+}
+
+

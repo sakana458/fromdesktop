@@ -1,0 +1,689 @@
+//--------------------------------------------------------------------------
+//
+// ScriptName : AriCompactToolSettings
+// Contents   : ツール設定の項目をまとめて小さなウィンドウ化。
+// Author     : Ari
+// URL        : cgjishu.net
+// Since      : 2015/03
+// LastUpdate : 2016/07/24 ダブルクリックに対応。右クリックでコマンドを確認機能追加。
+//              2016/06/09 幅をセーブして開きなおすと小さくできないバージョンがあるようなので、幅最小化のボタン追加。
+//              2016/06/07 幅をセーブする機能追加
+//              2016/02/28 シェルフ複数化
+//              2016/01/31 英語UI対応
+//              2015/09/01 python対応 ツール無効
+//              2015/08/30 ドック化とシェルフアイコンを常に表示
+//              2015/04/28 Maya2015より前のバージョンでのエラーを修正
+//              2015/04/27 ポリゴンの分割ツール インタラクティブ分割ツール エッジループの挿入ツールを追加
+//
+//--------------------------------------------------------------------------
+
+
+proc string AriToolSetting_translationToJP(string $menu_en){
+	global int $AriToolSettingUI_JPTrue;
+	if ($AriToolSettingUI_JPTrue==false) return $menu_en;
+	string $menu_jp;
+	string $shelfDefList_jp[20]={"一般"   ,"カーブ","サーフェス","ポリゴン","デフォメーション","アニメーション","ダイナミクス","レンダリング","ペイントエフェクト","トゥーン","マッスル","流体"  ,"ファー","カスタム"};
+	string $shelfDefList_en[20]={"General","Curves","Surfaces"  ,"Polygons","Deformation"     ,"Animation"     ,"Dynamics"    ,"Rendering"   ,"PaintEffects"      ,"Toon"    ,"Muscle"  ,"Fluids","Fur"   ,"Custom"};
+	string $menu_jp="";
+	for($i=0;$i<size($shelfDefList_en);$i++){
+		if($menu_en==$shelfDefList_en[$i]){
+			$menu_jp=$shelfDefList_jp[$i];
+			break;
+		}
+	}
+	if($menu_jp=="")$menu_jp=$menu_en;
+	return $menu_jp;
+}
+proc string AriToolSetting_translationToEN(string $menu_jp){
+	global int $AriToolSettingUI_JPTrue;
+	if ($AriToolSettingUI_JPTrue==false) return $menu_jp;
+	string $menu_en;
+	string $shelfDefList_jp[20]={"一般"   ,"カーブ","サーフェス","ポリゴン","デフォメーション","アニメーション","ダイナミクス","レンダリング","ペイントエフェクト","トゥーン","マッスル","流体"  ,"ファー","カスタム"};
+	string $shelfDefList_en[20]={"General","Curves","Surfaces"  ,"Polygons","Deformation"     ,"Animation"     ,"Dynamics"    ,"Rendering"   ,"PaintEffects"      ,"Toon"    ,"Muscle"  ,"Fluids","Fur"   ,"Custom"};
+	string $menu_en="";
+	for($i=0;$i<size($shelfDefList_jp);$i++){
+		if($menu_jp==$shelfDefList_jp[$i]){
+			$menu_en=$shelfDefList_en[$i];
+			break;
+		}
+	}
+	if($menu_en=="")$menu_en=$menu_jp;
+	return $menu_en;
+}
+global proc AriToolSetting_optionToolChange(){
+	global string $AriToolSettingOptionMenu[10];
+	int $modeMenu=`optionMenu -q -sl $AriToolSettingOptionMenu[1]`;
+	switch($modeMenu){
+		case 1:	setToolTo selectSuperContext; break;
+		case 2:	setToolTo moveSuperContext; break;
+		case 3:	setToolTo RotateSuperContext; break;
+		case 4:	setToolTo scaleSuperContext; break;
+		case 5: setToolTo polySplitContext; break;
+		case 6: setToolTo polySplitContext2; break;
+		case 7: setToolTo polySelectEditContext; break;
+		case 8: setToolTo ShowManips; break;
+	}
+}
+global proc AriToolSetting_setMode(){
+	global string $AriToolSettingOptionMenu[10];
+	int $modeMenu=`optionMenu -q -sl $AriToolSettingOptionMenu[0]`;
+	int $mode;
+	if(`currentCtx`=="moveSuperContext" || `currentCtx`=="scaleSuperContext"){
+		switch($modeMenu){
+			case 1:$mode=0;break;
+			case 2:$mode=1;break;
+			case 3:$mode=2;break;
+			case 4:$mode=3;break;
+			case 5:$mode=4;break;
+			case 6:$mode=9;break;
+			case 7:$mode=5;break;
+			case 8:$mode=6;break;
+		}
+		if(`currentCtx`=="moveSuperContext")	manipMoveContext -e -mode $mode Move;
+		if(`currentCtx`=="scaleSuperContext")	manipScaleContext -e -mode $mode Scale;
+	}
+	if(`currentCtx`=="RotateSuperContext"){
+		$mode=$modeMenu-1;
+		manipRotateContext -e -mode $mode Rotate;
+	}
+}
+global proc AriToolSetting_set(int $mode){
+	global string $AriToolSettingFloatField[10];
+	float $value[];
+	$value[1]=`floatField -q -v $AriToolSettingFloatField[1]`;
+	if($mode==1)manipMoveContext -e -snapValue $value[1] Move;
+	if($mode==2)manipRotateContext -e -snapValue $value[1] Rotate;
+	if($mode==3)manipScaleContext -e -snapValue $value[1] Scale;
+}
+global proc AriToolSetting_setSoftDistance(){
+	global string $AriToolSettingFloatField[10];
+	float $value=`floatField -q -v $AriToolSettingFloatField[2]`;
+	softSelect -e -softSelectDistance $value;
+}
+global proc AriToolSetting_setOtherCtx(int $mode){
+	global string $AriToolSettingVariousField[20];
+	if($mode==1){
+		polySplitCtx -e -subdivision    `intField -q -v $AriToolSettingVariousField[0]` polySplitContext;
+		polySplitCtx -e -smoothingangle `floatField -q -v $AriToolSettingVariousField[1]` polySplitContext;		
+		polySplitCtx -e -ste            `checkBox -q -v $AriToolSettingVariousField[2]` polySplitContext;
+		polySplitCtx -e -es             `checkBox -q -v $AriToolSettingVariousField[3]` polySplitContext;
+		polySplitCtx -e -ms             `intField -q -v $AriToolSettingVariousField[4]` polySplitContext;		
+		polySplitCtx -e -ps             `floatField -q -v $AriToolSettingVariousField[5]` polySplitContext;		
+	}
+	if($mode==2){
+		polySplitCtx2 -e -detachEdges        (`checkBox   -q -v $AriToolSettingVariousField[0]`) polySplitContext2;	
+		polySplitCtx2 -e -constrainToEdges   (`checkBox   -q -v $AriToolSettingVariousField[1]`) polySplitContext2;	
+		polySplitCtx2 -e -insertWithEdgeFlow (`checkBox   -q -v $AriToolSettingVariousField[2]`) polySplitContext2;	
+		polySplitCtx2 -e -adjustEdgeFlow     (`floatField -q -v $AriToolSettingVariousField[3]`) polySplitContext2;	
+		polySplitCtx2 -e -edgeMagnets        (`intField   -q -v $AriToolSettingVariousField[4]`) polySplitContext2;	
+		polySplitCtx2 -e -snappingTolerance  (`floatField -q -v $AriToolSettingVariousField[5]`) polySplitContext2;	
+	}
+	if($mode==3){
+		polySelectEditCtx -e -uem (`checkBox   -q -v $AriToolSettingVariousField[3]`) polySelectEditContext;	
+		polySelectEditCtx -e -div (`intField   -q -v $AriToolSettingVariousField[4]`) polySelectEditContext;	
+		polySelectEditCtx -e -ac  (`checkBox   -q -v $AriToolSettingVariousField[5]`) polySelectEditContext;	
+		polySelectEditCtx -e -fq  (`checkBox   -q -v $AriToolSettingVariousField[6]`) polySelectEditContext;	
+		polySelectEditCtx -e -ief (`checkBox   -q -v $AriToolSettingVariousField[7]`) polySelectEditContext;	
+		polySelectEditCtx -e -aef (`floatField -q -v $AriToolSettingVariousField[8]`) polySelectEditContext;	
+		polySelectEditCtx -e -sma (`floatField -q -v $AriToolSettingVariousField[9]`) polySelectEditContext;	
+	}
+}
+global proc AriToolSetting_ShelfMenu_Make(){
+	global string $AriToolSetting_ShelfMenu_VisColum[];
+	global string $AriToolSetting_ShelfMenu_MainFrame[];
+	global string $AriToolSetting_ShelfMenu_DeleteButton[];
+	global string $AriToolSetting_shelfOputionMenu[];
+	global string $AriToolSetting_ShelfMenu_ButtonUp[];
+	global string $AriToolSetting_ShelfMenu_ButtonDown[];
+	global string $AriToolSetting_ShelfMenu_ButtonVis[];
+	global int $AriToolSettingUI_shelfTotal;
+	int $number=0;
+	for($i=0;$i<($AriToolSettingUI_shelfTotal+2);$i++){
+		if($AriToolSetting_ShelfMenu_MainFrame[$i]==""){
+			$number=$i;
+			break;
+		}
+	}
+	if($number>=($AriToolSettingUI_shelfTotal-1))button -e -en false AriCompactToolSettings_PlusButton;
+	string $shelfLayout="ShelfLayout";
+	string $shelfLayoutList_AllEnglish[]=`shelfTabLayout -q -ca $shelfLayout `;
+	$AriToolSetting_ShelfMenu_MainFrame[$number]=`columnLayout -adj true -p AriToolSetting_Maincolumn`;
+	separator -h 10 -st "in";
+	rowLayout -nc 2 -ad2 2 ;
+	$AriToolSetting_ShelfMenu_ButtonVis[$number] = `iconTextButton -h 16 -i "closeBar.png"   -c ("AriToolSetting_ShelfShow("+$number+")")`;
+	$AriToolSetting_shelfOputionMenu[$number]    = `optionMenu -w 68 -label "" -cc ("AriToolSetting_setShelf("+$number+")")`;
+	for($tab in $shelfLayoutList_AllEnglish){
+		string $tabLang=AriToolSetting_translationToJP($tab);
+		menuItem -label $tabLang;	
+	}
+	setParent..;
+	$AriToolSetting_ShelfMenu_VisColum[$number]=`columnLayout -adj true`;
+	rowLayout -nc 2 -ad2 1;
+	string $form=`formLayout`;
+	$AriToolSetting_ShelfMenu_ButtonUp[$number]=`iconTextButton -h 20 -i "arrowUp.png"   -c ("AriToolSetting_ShelfMenu_UpDown("+$number+",-32)")`;
+	$AriToolSetting_ShelfMenu_ButtonDown[$number]=`iconTextButton -h 20 -i "arrowDown.png" -c ("AriToolSetting_ShelfMenu_UpDown("+$number+",32)")`;
+	setParent..;
+	formLayout -e
+		-af $AriToolSetting_ShelfMenu_ButtonUp[$number]     "left"  0 
+	    -ap $AriToolSetting_ShelfMenu_ButtonUp[$number]     "right" 0 50
+		-ac $AriToolSetting_ShelfMenu_ButtonDown[$number]   "left"  0 $AriToolSetting_ShelfMenu_ButtonUp[$number]  
+	    -af $AriToolSetting_ShelfMenu_ButtonDown[$number]   "right" 0 
+	$form;
+	$AriToolSetting_ShelfMenu_DeleteButton[$number] = `button -w 20 -h 20 -l "-" -c ("AriToolSetting_ShelfMenu_Delete("+$number+")")`;
+	setParent..;
+	setParent..;
+	string $loadShelf_string = ("AriCompactTool_Shelf"+$number);
+	string $loadSelectShelf;
+	if(`optionVar -exists $loadShelf_string`) $loadSelectShelf = `optionVar -q $loadShelf_string`;
+	string $selectShefl_jp=AriToolSetting_translationToJP($loadSelectShelf);
+	if($selectShefl_jp != ""){
+		if(stringArrayContains($loadSelectShelf, $shelfLayoutList_AllEnglish)){
+			optionMenu -e -v $selectShefl_jp $AriToolSetting_shelfOputionMenu[$number];
+		}
+	}
+	else{	
+		string $active = `shelfTabLayout -q -selectTab  $shelfLayout`;
+		string $active_JP = AriToolSetting_translationToJP($active);;
+		optionMenu -e -v $active_JP $AriToolSetting_shelfOputionMenu[$number];
+	}
+	AriToolSetting_setShelf($number);
+	string $loadShelf_size = ("AriCompactTool_ShelfSize"+$number);
+	int $loadSize;
+	if(`optionVar -exists $loadShelf_size`) $loadSize = `optionVar -q $loadShelf_size`;
+	else $loadSize=168;
+	AriToolSetting_ShelfMenu_SizeChange($number,$loadSize);
+	string $loadShelf_open = ("AriCompactTool_ShelfOpen"+$number);
+	int $loadOpenTrue;
+	if(`optionVar -exists $loadShelf_open`) $loadOpenTrue = `optionVar -q $loadShelf_open`;
+	else $loadOpenTrue=true;
+	columnLayout -e -visible $loadOpenTrue $AriToolSetting_ShelfMenu_VisColum[$number];
+}
+global proc AriToolSetting_ShelfMenu_Delete(int $number){
+	global string $AriToolSetting_ShelfMenu_VisColum[];
+	global string $AriToolSetting_ShelfMenu_MainFrame[];
+	global string $AriToolSetting_ShelfMenu_DeleteButton[];
+	global string $AriToolSetting_shelfOputionMenu[];
+	global string $AriToolSetting_ShelfMenu_ShelfLayout[];
+	global string $AriToolSetting_ShelfMenu_ButtonUp[];
+	global string $AriToolSetting_ShelfMenu_ButtonDown[];
+	global string $AriToolSetting_ShelfMenu_ButtonVis[];
+	global int $AriToolSettingUI_shelfTotal;
+	deleteUI $AriToolSetting_ShelfMenu_MainFrame[$number];
+	int $total=0;
+	for($i=$number;$i<($AriToolSettingUI_shelfTotal+2);$i++){
+		$AriToolSetting_ShelfMenu_MainFrame[$i]    = $AriToolSetting_ShelfMenu_MainFrame[$i+1];
+		$AriToolSetting_ShelfMenu_DeleteButton[$i] = $AriToolSetting_ShelfMenu_DeleteButton[$i+1];
+		$AriToolSetting_shelfOputionMenu[$i]       = $AriToolSetting_shelfOputionMenu[$i+1];
+		$AriToolSetting_ShelfMenu_ShelfLayout[$i]  = $AriToolSetting_ShelfMenu_ShelfLayout[$i+1];
+		$AriToolSetting_ShelfMenu_ButtonUp[$i]     = $AriToolSetting_ShelfMenu_ButtonUp[$i+1];
+		$AriToolSetting_ShelfMenu_ButtonDown[$i]   = $AriToolSetting_ShelfMenu_ButtonDown[$i+1];
+		$AriToolSetting_ShelfMenu_VisColum[$i]     = $AriToolSetting_ShelfMenu_VisColum[$i+1];
+		$AriToolSetting_ShelfMenu_ButtonVis[$i]    = $AriToolSetting_ShelfMenu_ButtonVis[$i+1];
+		string $loadShelf_string = ("AriCompactTool_Shelf"+($i+1));
+		string $saveShelf_string = ("AriCompactTool_Shelf"+$i);
+		string $loadShelf_size = ("AriCompactTool_ShelfSize"+($i+1));
+		string $saveShelf_size = ("AriCompactTool_ShelfSize"+$i);
+		string $loadShelf_open = ("AriCompactTool_ShelfOpen"+($i+1));
+		string $saveShelf_open = ("AriCompactTool_ShelfOpen"+$i);
+		if($AriToolSetting_ShelfMenu_DeleteButton[$i]==""){
+			optionVar -remove $saveShelf_string;
+			optionVar -remove $saveShelf_size;
+			optionVar -remove $saveShelf_open;
+			$total=$i;
+			break;
+		}
+		string $loadSelectShelf;
+		if(`optionVar -exists $loadShelf_string`) $loadSelectShelf = `optionVar -q $loadShelf_string`;
+		else $loadSelectShelf="Empty";
+		optionVar -sv $saveShelf_string $loadSelectShelf;
+		int $loadSize;
+		if(`optionVar -exists $loadShelf_size`) $loadSize = `optionVar -q $loadShelf_size`;
+		else $loadSize = 168;
+		optionVar -intValue $saveShelf_size $loadSize;
+		int $loadOpenTrue;
+		if(`optionVar -exists $loadShelf_open`) $loadOpenTrue = `optionVar -q $loadShelf_open`;
+		else $loadOpenTrue=true;
+		optionVar -intValue $saveShelf_open $loadOpenTrue;
+		button -e -c ("AriToolSetting_ShelfMenu_Delete("+$i+")") $AriToolSetting_ShelfMenu_DeleteButton[$i];
+		optionMenu -e -cc ("AriToolSetting_setShelf("+$i+")") $AriToolSetting_shelfOputionMenu[$i];
+		iconTextButton -e -c ("AriToolSetting_ShelfMenu_UpDown("+$i+",-32)") $AriToolSetting_ShelfMenu_ButtonUp[$i];
+		iconTextButton -e -c ("AriToolSetting_ShelfMenu_UpDown("+$i+", 32)") $AriToolSetting_ShelfMenu_ButtonDown[$i];
+		iconTextButton -e -c ("AriToolSetting_ShelfShow("+$i+")") $AriToolSetting_ShelfMenu_ButtonVis[$i];
+	}
+	button -e -en true AriCompactToolSettings_PlusButton;
+}
+global proc AriToolSetting_saveWindowSize(){
+	int $width=`dockControl -q -width AriToolSettingsW`;
+	print ("Width Save "+$width+"\n");
+	string $saveShelf_open = ("AriCompactTool_WindowWidth");
+	optionVar -intValue $saveShelf_open $width;
+}
+global proc AriToolSetting_ShelfShow(int $number){
+	global string $AriToolSetting_ShelfMenu_VisColum[];
+	int $vis = !`columnLayout -q -visible $AriToolSetting_ShelfMenu_VisColum[$number]`;
+	columnLayout -e -visible $vis $AriToolSetting_ShelfMenu_VisColum[$number];
+	string $saveShelf_open = ("AriCompactTool_ShelfOpen"+$number);
+	optionVar -intValue $saveShelf_open $vis;
+}
+global proc AriToolSetting_setShelf(int $number){
+	global string $AriToolSettingSelectShelf;
+	global string $AriToolSetting_ShelfMenu_MainFrame[];
+	global string $AriToolSetting_shelfOputionMenu[];	
+	global string $AriToolSetting_ShelfMenu_ShelfLayout[];
+	global string $AriToolSetting_ShelfMenu_VisColum[];
+	string $menu=`optionMenu -q -v $AriToolSetting_shelfOputionMenu[$number]`;
+	$AriToolSettingSelectShelf = AriToolSetting_translationToEN($menu);
+	string $saveShelf_string = ("AriCompactTool_Shelf"+$number);
+	optionVar -sv $saveShelf_string $AriToolSettingSelectShelf;
+	string $shelfLayout="ShelfLayout";
+	string $shelfName = ($shelfLayout+"|"+$AriToolSettingSelectShelf);
+	string $shelfButtonList[]=`shelfLayout -q -ca $AriToolSettingSelectShelf`;
+	if(size($shelfButtonList)==0){
+		string $active = `shelfTabLayout -q -selectTab $shelfLayout`;
+		shelfTabLayout -e -selectTab $shelfName $shelfLayout;	
+		shelfTabLayout -e -selectTab $active $shelfLayout;		
+		$shelfButtonList=`shelfLayout -q -ca $AriToolSettingSelectShelf`;	
+	}
+	int $hSize=168;
+	if(`shelfLayout -ex $AriToolSetting_ShelfMenu_ShelfLayout[$number]`){
+		$hSize=`shelfLayout -q -h $AriToolSetting_ShelfMenu_ShelfLayout[$number]`;
+		deleteUI $AriToolSetting_ShelfMenu_ShelfLayout[$number];
+	}
+	$AriToolSetting_ShelfMenu_ShelfLayout[$number] =`shelfLayout   -w 86 -h $hSize -p $AriToolSetting_ShelfMenu_VisColum[$number]`;
+	for($i=0;$i<size($shelfButtonList);$i++){
+		if(!`shelfButton -ex $shelfButtonList[$i]`)continue;
+		string $image   = `shelfButton -q -image $shelfButtonList[$i]`;
+		string $command = `shelfButton -q -c     $shelfButtonList[$i]`;
+		string $dcc     = `shelfButton -q -dcc   $shelfButtonList[$i]`; 
+		string $ann     = `shelfButton -q -ann   $shelfButtonList[$i]`;
+		string $iol     = `shelfButton -q -iol   $shelfButtonList[$i]`; 
+		string $stp     = `shelfButton -q -stp   $shelfButtonList[$i]`; 
+		float  $olc[3]  = `shelfButton -q -olc   $shelfButtonList[$i]`;
+		float  $olb[4]  = `shelfButton -q -olb   $shelfButtonList[$i]`;
+		int    $rpt     = `shelfButton -q -rpt   $shelfButtonList[$i]`; 
+		iconTextButton -i   $image
+		               -stp $stp
+		               -c   $command
+		               -dcc $dcc
+		               -ann $ann
+		               -iol $iol
+		               -olc $olc[0] $olc[1] $olc[2] 
+		               -olb $olb[0] $olb[1] $olb[2] $olb[3]
+		               -rpt $rpt
+		;
+		popupMenu -button 3;
+			menuItem -l $command -c $command;
+			if($dcc!="")menuItem -l $dcc -c $dcc;
+	}
+	setParent..;
+	setParent..;
+	setParent..;
+	setParent..;
+}
+global proc AriToolSetting_ShelfMenu_UpDown(int $number ,int $size){
+	global string $AriToolSetting_ShelfMenu_ShelfLayout[];
+	int $shelfSize = `shelfLayout -q -h $AriToolSetting_ShelfMenu_ShelfLayout[$number]`;
+	int $changeSize=$shelfSize + $size;
+	if($changeSize<=32)return;
+	shelfLayout -e -h $changeSize $AriToolSetting_ShelfMenu_ShelfLayout[$number];
+	string $saveShelf_string = ("AriCompactTool_ShelfSize"+$number);
+	optionVar -intValue $saveShelf_string $changeSize;
+}
+global proc AriToolSetting_ShelfMenu_SizeChange(int $number ,int $size){
+	global string $AriToolSetting_ShelfMenu_ShelfLayout[];
+	shelfLayout -e -h $size $AriToolSetting_ShelfMenu_ShelfLayout[$number];
+}
+global proc AriToolSetting_ToolMenu_Make(){
+	frameLayout -l "Tool" -p AriToolSetting_Maincolumn -cll true
+					-ec "AriToolSetting_ToolMenu_Open(0)"
+					-cc "AriToolSetting_ToolMenu_Open(1)" AriToolSetting_ToolsetMain;
+	setParent..;
+	AriToolSetting_ToolMenu_Change;
+	setParent..;
+	int $openTrue=0;
+	if(`optionVar -exists "AriCompactTool_ToolOpen"`) $openTrue = `optionVar -q "AriCompactTool_ToolOpen"`;
+	frameLayout -e -cl $openTrue AriToolSetting_ToolsetMain;
+}
+global proc AriToolSetting_ToolMenu_Open(int $mode){
+	optionVar -intValue "AriCompactTool_ToolOpen" $mode;
+}
+global proc AriToolSetting_ToolMenu_Change(){
+	global string $AriToolSettingOptionMenu[];
+	global string $AriToolSettingFloatField[];
+	global string $AriToolSettingForm[2];
+	global string $AriToolSettingIconButton;
+	global string $AriToolSettingSelectShelf;
+	global string $AriToolSettingVariousField[];
+	global int $AriToolSettingUI_JPTrue;
+	string $mayaVer=`about -v`;
+	string $menuName_jp[];
+	string $menuName_en[];
+	string $menuName[];
+	$menuName_jp = {"選択"  ,"移動","回転"  ,"スケール","分割" ,"インタラ分割","ループ挿入","Etc"};
+	$menuName_en = {"Select","Move","Rotate","Scale"   ,"Split","Inter Split" ,"InsertLoop","Etc" };
+	$menuName = $menuName_en;
+	if($AriToolSettingUI_JPTrue==true)$menuName = $menuName_jp;
+	if(`columnLayout -ex AriToolSetting_ToolsetContent`)deleteUI AriToolSetting_ToolsetContent;
+	columnLayout  -p AriToolSetting_ToolsetMain -adj true AriToolSetting_ToolsetContent; 
+	$AriToolSettingOptionMenu[1]=`optionMenu -w 80  -label "" -cc "AriToolSetting_optionToolChange"`;
+		menuItem -label $menuName[0];
+		menuItem -label $menuName[1];
+		menuItem -label $menuName[2];
+		menuItem -label $menuName[3];
+		menuItem -label $menuName[4];
+		menuItem -label $menuName[5];
+		menuItem -label $menuName[6];
+		menuItem -label $menuName[7];
+	columnLayout;
+	$AriToolSettingIconButton=`iconTextButton -w 32 -h 32 -i "toolSettings.png" -st "iconOnly"  -c "ToggleToolSettings"`;
+	setParent..;
+	separator -h 3 -w 80;
+	string $currentCt=`currentCtx`;
+	if(	$currentCt == "selectSuperContext" ||
+		$currentCt == "moveSuperContext" ||
+		$currentCt == "RotateSuperContext" ||
+		$currentCt == "scaleSuperContext" ||
+		$currentCt == "polySplitContext" ||
+		$currentCt == "polySplitContext2"||
+		$currentCt == "polySelectEditContext"
+	){
+		int $intVal;
+		float $floatVal;
+		if($currentCt == "selectSuperContext"){
+			$menuName_jp = {"ボックス","カメラベース","ドラッグ","カメラベース","バック"};
+			$menuName_en = {"Marquee","Cam base","Drag","Cam base","Backfaces"};
+			$menuName = $menuName_en;
+			if($AriToolSettingUI_JPTrue==true)$menuName = $menuName_jp;
+			iconTextButton -e -i "aselect.png" $AriToolSettingIconButton;
+			optionMenu -e -sl 1 $AriToolSettingOptionMenu[1];
+		    radioCollection;
+				string $radio1 =`radioButton -label $menuName[0]  -onc "selectPref -paintSelect 0;"`;
+								checkBox -w 80 -l $menuName[1] -v `selectPref -q -useDepth`	-onc "selectPref -useDepth 1;"
+																								-ofc "selectPref -useDepth 0;";
+				string $radio2 =`radioButton -label $menuName[2]  -onc "selectPref -paintSelect 1;"`;
+								checkBox -w 80 -l $menuName[3] -v `selectPref -q -paintSelectWithDepth`	-onc "selectPref -paintSelectWithDepth 1;"
+																											-ofc "selectPref -paintSelectWithDepth 0;";
+			if(startsWith ($mayaVer,"2015") || startsWith ($mayaVer,"2016") ){
+								checkBox -w 80 -l $menuName[4] -v `selectPref -q -preSelectBackfacing`	-onc "selectPref -preSelectBackfacing 1;"
+																											-ofc "selectPref -preSelectBackfacing 0;";
+			}
+			int $paintSel=`selectPref -q -paintSelect`;
+			if($paintSel==0)radioButton -e -select $radio1;
+			if($paintSel==1)radioButton -e -select $radio2;
+		}
+		if($currentCt == "moveSuperContext"){
+			$menuName_jp = {"オブジェ","ローカル","ワールド","法線"  ,"回転軸沿" ,"法線平均"   ,"ライブ軸"  ,"カスタム","子トラ維持","UVの保持","ステップ","相対","微調整","間隔維持",""};
+			$menuName_en = {"Object",  "Local"   ,"World"   ,"Normal","Along rot","Normals ave","Along live","Custom  ","Pre Child","Pre UVs"  ,"Discrete","Relative","Tweak","Ret spacing",""};
+			$menuName = $menuName_en;
+			if($AriToolSettingUI_JPTrue==true)$menuName = $menuName_jp;
+			iconTextButton -e -i "move_M.png" $AriToolSettingIconButton;
+			optionMenu -e -sl 2 $AriToolSettingOptionMenu[1];
+			$AriToolSettingOptionMenu[0]=`optionMenu -w 78 -label "" -cc "AriToolSetting_setMode"`;
+					menuItem -label $menuName[0];
+					menuItem -label $menuName[1];
+					menuItem -label $menuName[2];
+					menuItem -label $menuName[3];
+					menuItem -label $menuName[4];
+					menuItem -label $menuName[5];
+					menuItem -label $menuName[6];
+					menuItem -label $menuName[7];
+			checkBox -w 80 -l $menuName[8] -v `manipMoveContext -q -preserveChildPosition Move`	-onc "setTRSPreserveChildPosition true;"
+																								-ofc "setTRSPreserveChildPosition false;";
+			checkBox -l $menuName[9] -v `manipMoveContext -q -preserveUV Move`	-onc "setTRSPreserveUVs true;"
+																				-ofc "setTRSPreserveUVs false;";
+			separator -h 3 -w 80 -st "in";
+			checkBox -l $menuName[10] -v `manipMoveContext -q -snap Move`	-onc "manipMoveContext -e -snap true Move;"
+																		-ofc "manipMoveContext -e -snap false Move;";
+			checkBox -l $menuName[11] -v `manipMoveContext -q -snapRelative Move`	-onc "manipMoveContext -e -snapRelative true Move;"
+																			-ofc "manipMoveContext -e -snapRelative false Move";
+			float $snapValue=`manipMoveContext -q -snapValue Move`;
+			$AriToolSettingFloatField[1]=`floatField -pre 2 -v $snapValue -cc "AriToolSetting_set(1)"`;
+			checkBox -l $menuName[12] -v `manipMoveContext -q -tweakMode Move` -cc "STRSTweakModeToggle";
+			separator -h 3 -w 80 -st "in";
+			checkBox -l $menuName[13] -v `manipMoveContext -q -snapComponentsRelative  Move`	-onc "manipMoveContext -e -snapComponentsRelative true Move;"
+																							-ofc "manipMoveContext -e -snapComponentsRelative false Move;";
+			int $val = `manipMoveContext -q -mode Move`;
+			int $modeMenu=1;
+			switch($val){
+				case 0:$modeMenu=1;break;
+				case 1:$modeMenu=2;break;
+				case 2:$modeMenu=3;break;
+				case 3:$modeMenu=4;break;
+				case 4:$modeMenu=5;break;
+				case 9:$modeMenu=6;break;
+				case 5:$modeMenu=7;break;
+				case 6:$modeMenu=8;break;
+			}
+			optionMenu -e -sl $modeMenu $AriToolSettingOptionMenu[0];
+		}
+		if($currentCt == "RotateSuperContext"){
+			$menuName_jp = {"ローカル","ワールド","ジンバル","カスタム","ステップ","相対"    ,"バーチャル","子維持"   ,"UV保持"};
+			$menuName_en = {"Local"   ,"World"   ,"Gimbal"  ,"Custom  ","Discrete","Relative","Virtual"   ,"Pre Child","Pre UVs"};
+			$menuName = $menuName_en;
+			if($AriToolSettingUI_JPTrue==true)$menuName = $menuName_jp;
+			iconTextButton -e -i "rotate_M.png" $AriToolSettingIconButton;
+			optionMenu -e -sl 3 $AriToolSettingOptionMenu[1];
+			$AriToolSettingOptionMenu[0]=`optionMenu -w 78 -label "" -cc "AriToolSetting_setMode"`;
+					menuItem -label $menuName[0];
+					menuItem -label $menuName[1];
+					menuItem -label $menuName[2];
+					menuItem -label $menuName[3];
+			checkBox -l $menuName[4] -v (`manipRotateContext -q -snap Rotate`)	-onc "manipRotateContext -e -snap true Rotate;"
+																				-ofc "manipRotateContext -e -snap false Rotate;";
+			checkBox -l $menuName[5] -v (`manipRotateContext -q -snapRelative Rotate`)	-onc "manipRotateContext -e -snapRelative true Rotate;"
+																					-ofc "manipRotateContext -e -snapRelative false Rotate;";
+			float $snapValue=`manipRotateContext -q -snapValue Rotate`;
+			$AriToolSettingFloatField[1]=`floatField -pre 2 -v $snapValue -cc "AriToolSetting_set(2)"`;
+			checkBox -l $menuName[6] -v (`manipRotateContext -q -centerTrackball Rotate`)	-onc "manipRotateContext -e -centerTrackball true Rotate;"
+																							-ofc "manipRotateContext -e -centerTrackball false Rotate;";
+			checkBox -l $menuName[7] -v (`manipRotateContext -q -preserveChildPosition Rotate`)	-onc "setTRSPreserveChildPosition true;"
+																							-ofc "setTRSPreserveChildPosition false;";
+			checkBox -l $menuName[8] -v (`manipRotateContext -q -preserveUV Rotate`)	-onc "manipRotateContext -e -preserveUV true Rotate;"
+																					-ofc "manipRotateContext -e -preserveUV false Rotate;";
+			int $val= `manipRotateContext -q -mode Rotate`;
+			int $modeMenu=$val+1;
+			optionMenu -e -sl $modeMenu $AriToolSettingOptionMenu[0];
+		}
+		if($currentCt == "scaleSuperContext"){
+			$menuName_jp = {"オブジェ","ローカル","ワールド","法線"  ,"回転軸"     ,"法線平均"  ,"ライブ軸"  ,"カスタム","子トラ維持","UV保持" ,"ステップ","相対"};
+			$menuName_en = {"Object"  ,"Local"   ,"World"   ,"Normal","Along rot"  ,"Normal ave","Along live","Custom"  ,"Pre Child" ,"Pre UVs","Discrete","Relative"};
+			$menuName = $menuName_en;
+			if($AriToolSettingUI_JPTrue==true)$menuName = $menuName_jp;
+			iconTextButton -e -i "scale_M.png" $AriToolSettingIconButton;
+			optionMenu -e -sl 4 $AriToolSettingOptionMenu[1];
+			$AriToolSettingOptionMenu[0]=`optionMenu -w 78 -label "" -cc "AriToolSetting_setMode"`;
+				menuItem -label $menuName[0];
+				menuItem -label $menuName[1];
+				menuItem -label $menuName[2];
+				menuItem -label $menuName[3];
+				menuItem -label $menuName[4];
+				menuItem -label $menuName[5];
+				menuItem -label $menuName[6];
+				menuItem -label $menuName[7];
+			checkBox -w 80 -l $menuName[8] -v `manipScaleContext -q -preserveChildPosition Scale`	-onc "setTRSPreserveChildPosition true;"
+																								-ofc "setTRSPreserveChildPosition false;";
+			checkBox -l $menuName[9] -v `manipScaleContext -q -preserveUV Scale`	-onc "setTRSPreserveUVs true;"
+																				-ofc "setTRSPreserveUVs false;";
+			separator -h 3 -w 80 -st "in";
+			checkBox -l $menuName[10] -v `manipScaleContext -q -snap Scale`	-onc "manipScaleContext -e -snap true Scale;"
+																			-ofc "manipScaleContext -e -snap false Scale;";
+			checkBox -l $menuName[11] -v `manipScaleContext -q -snapRelative Scale`	-onc "manipScaleContext -e -snapRelative true Scale;"
+																				-ofc "manipScaleContext -e -snapRelative false Scale";
+			float $snapValue=`manipScaleContext -q -snapValue Scale`;
+			$AriToolSettingFloatField[1]=`floatField -pre 2 -v $snapValue -cc "AriToolSetting_set(3)"`;
+			int $val= `manipScaleContext -q -mode Scale`;
+			int $modeMenu=1;
+			switch($val){
+				case 0:$modeMenu=1;break;
+				case 1:$modeMenu=2;break;
+				case 2:$modeMenu=3;break;
+				case 3:$modeMenu=4;break;
+				case 4:$modeMenu=5;break;
+				case 9:$modeMenu=6;break;
+				case 5:$modeMenu=7;break;
+				case 6:$modeMenu=8;break;
+			}
+			optionMenu -e -sl $modeMenu $AriToolSettingOptionMenu[0];
+		}
+		if($currentCt == "polySplitContext"){
+			$menuName_jp = {"分割数"   ,"スムース角"    ,"エッジのみ"  ,"エッジに沿","頂点数","スナップ許容値"};
+			$menuName_en = {"Divisions","Smooth angle"  ,"From edges"  ,"Along edge","Points","Snapping"};
+			$menuName = $menuName_en;
+			if($AriToolSettingUI_JPTrue==true)$menuName = $menuName_jp;
+			iconTextButton -e -i "polySplitFacet.png" $AriToolSettingIconButton;
+			optionMenu -e -sl 5 $AriToolSettingOptionMenu[1];
+			rowLayout -nc 2;
+			$intVal = `polySplitCtx -q -subdivision polySplitContext`;
+			text -l ($menuName[0]);
+			$AriToolSettingVariousField[0] = `intField -w 30 -v $intVal -cc "AriToolSetting_setOtherCtx(1)"`;
+			setParent..;
+			text -l ($menuName[1]);
+			$floatVal = `polySplitCtx -q -sma  polySplitContext`;
+			$AriToolSettingVariousField[1] = `floatField -w 60 -v $floatVal -cc "AriToolSetting_setOtherCtx(1)"`;
+			$intVal = `polySplitCtx -q -ste polySplitContext`;
+			$AriToolSettingVariousField[2] = `checkBox -l ($menuName[2]) -v $intVal -cc "AriToolSetting_setOtherCtx(1)"`;
+			$intVal = `polySplitCtx -q -es polySplitContext`;
+			$AriToolSettingVariousField[3] = `checkBox -l ($menuName[3]) -v $intVal -cc "AriToolSetting_setOtherCtx(1)"`;
+			$intVal = `polySplitCtx -q -ms polySplitContext`;
+			rowLayout -nc 2;
+			text -l $menuName[4];
+			$AriToolSettingVariousField[4] = `intField -w 30 -v $intVal -cc "AriToolSetting_setOtherCtx(1)"`;
+			setParent..;
+			text -l ($menuName[5]);
+			$floatVal = `polySplitCtx -q -ps polySplitContext`;
+			$AriToolSettingVariousField[5] = `floatField -w 60 -v $floatVal -cc "AriToolSetting_setOtherCtx(1)"`;
+		}
+		if($currentCt == "polySplitContext2"){
+			$menuName_jp = {"デタッチ","コンスト","フロー挿入"  ,"フロー調整","磁石数" ,"スナップ許容値"};
+			$menuName_en = {"Detach"  ,"Constrain","Insert flow","Adjust"    ,"Magnets","Tolerance"};
+			$menuName = $menuName_en;
+			if($AriToolSettingUI_JPTrue==true)$menuName = $menuName_jp;
+			iconTextButton -e -i "polySplitFacet.png" $AriToolSettingIconButton;
+			optionMenu -e -sl 6 $AriToolSettingOptionMenu[1];
+			$intVal = `polySplitCtx2 -q -detachEdges polySplitContext2`;
+			$AriToolSettingVariousField[0] = `checkBox -l ($menuName[0]) -v $intVal -cc "AriToolSetting_setOtherCtx(2)"`;
+			$intVal = `polySplitCtx2 -q -constrainToEdges polySplitContext2`;
+			$AriToolSettingVariousField[1] = `checkBox -l ($menuName[1]) -v $intVal -cc "AriToolSetting_setOtherCtx(2)"`;
+			$intVal = `polySplitCtx2 -q -insertWithEdgeFlow polySplitContext2`;
+			$AriToolSettingVariousField[2] = `checkBox -l ($menuName[2]) -v $intVal -cc "AriToolSetting_setOtherCtx(2)"`;
+			text -l ($menuName[3]);
+			$floatVal = `polySplitCtx2 -q -adjustEdgeFlow polySplitContext2`;
+			$AriToolSettingVariousField[3] = `floatField -w 60 -v $floatVal -cc "AriToolSetting_setOtherCtx(2)"`;
+			separator -h 3 -w 80 -st "in";
+			rowLayout -nc 2;
+			$intVal = `polySplitCtx2 -q -edgeMagnets polySplitContext2`;
+			text -l ($menuName[4]);
+			$AriToolSettingVariousField[4] = `intField -w 30 -v $intVal -cc "AriToolSetting_setOtherCtx(2)"`;
+			setParent..;
+			text -l ($menuName[5]);
+			$floatVal = `polySplitCtx2 -q -snappingTolerance polySplitContext2`;
+			$AriToolSettingVariousField[5] = `floatField -w 60 -v $floatVal -cc "AriToolSetting_setOtherCtx(2)"`;
+		}
+		if($currentCt == "polySelectEditContext"){
+			$menuName_jp = {"相対"    ,"均等"    ,"複数"    ,"同等の乗数","ループ数","自動完了" ,"四角に固定","フロー挿入" ,"フロー調整","スムース角"};
+			$menuName_en = {"Relative","Distance","Multiple","Equal"     ,"Loop"    ,"Auto comp","Fix Quads" ,"Insert flow","Adjust Flow"    ,"Smooth angle"};
+			$menuName = $menuName_en;
+			if($AriToolSettingUI_JPTrue==true)$menuName = $menuName_jp;
+			iconTextButton -e -i "polySplitEdgeRing.png" $AriToolSettingIconButton;
+			optionMenu -e -sl 7 $AriToolSettingOptionMenu[1];
+		    radioCollection;
+				string $radio1 =`radioButton -label ($menuName[0]) -onc "polySelectEditCtx -e -splitType 1 polySelectEditContext"`;
+				string $radio2 =`radioButton -label ($menuName[1]) -onc "polySelectEditCtx -e -splitType 0 polySelectEditContext"`;
+				string $radio3 =`radioButton -label ($menuName[2]) -onc "polySelectEditCtx -e -splitType 2 polySelectEditContext"`;
+			int $intSelect=`polySelectEditCtx -q -splitType polySelectEditContext`;
+			if($intSelect==1)radioButton -e -select $radio1;
+			if($intSelect==0)radioButton -e -select $radio2;
+			if($intSelect==2)radioButton -e -select $radio3;
+			$intVal = `polySelectEditCtx -q -uem polySelectEditContext`;
+			$AriToolSettingVariousField[3] = `checkBox -l ($menuName[3]) -v $intVal -cc "AriToolSetting_setOtherCtx(3)"`;
+			rowLayout -nc 2;
+			$intVal = `polySelectEditCtx -q -div polySelectEditContext`;
+			text -l ($menuName[4]);
+			$AriToolSettingVariousField[4] = `intField -w 30 -v $intVal -cc "AriToolSetting_setOtherCtx(3)"`;
+			setParent..;
+			$intVal = `polySelectEditCtx -q -ac polySelectEditContext`;
+			$AriToolSettingVariousField[5] = `checkBox -l ($menuName[5]) -v $intVal -cc "AriToolSetting_setOtherCtx(3)"`;
+			$intVal = `polySelectEditCtx -q -fq polySelectEditContext`;
+			$AriToolSettingVariousField[6] = `checkBox -l ($menuName[6]) -v $intVal -cc "AriToolSetting_setOtherCtx(3)"`;
+			$intVal = `polySelectEditCtx -q -ief polySelectEditContext`;
+			$AriToolSettingVariousField[7] = `checkBox -l ($menuName[7]) -v $intVal -cc "AriToolSetting_setOtherCtx(3)"`;
+			text -l ($menuName[8]);
+			$floatVal = `polySelectEditCtx -q -aef polySelectEditContext`;
+			$AriToolSettingVariousField[8] = `floatField -w 60 -v $floatVal -cc "AriToolSetting_setOtherCtx(3)"`;
+			text -l ($menuName[9]);
+			$floatVal = `polySelectEditCtx -q -sma polySelectEditContext`;
+			$AriToolSettingVariousField[9] = `floatField -w 60 -v $floatVal -cc "AriToolSetting_setOtherCtx(3)"`;
+		}
+		if(	$currentCt == "selectSuperContext" ||
+		$currentCt == "moveSuperContext" ||
+		$currentCt == "RotateSuperContext" ||
+		$currentCt == "scaleSuperContext"
+		){
+			$menuName_jp = {"ソフト","対称"};
+			$menuName_en = {"Softt" ,"Symmetry"};
+			$menuName = $menuName_en;
+			if($AriToolSettingUI_JPTrue==true)$menuName = $menuName_jp;
+			separator -h 3 -w 80 -st "in";
+			checkBox -l $menuName[0] -v `softSelect -q -softSelectEnabled`	-onc "softSelect -e -softSelectEnabled true"
+																-ofc "softSelect -e -softSelectEnabled false";
+			float $softDistance=`softSelect -q -softSelectDistance`;
+			$AriToolSettingFloatField[2]=`floatField -pre 2 -v $softDistance -cc "AriToolSetting_setSoftDistance"`;
+			separator -h 3 -w 80 -st "in";
+			checkBox -l $menuName[1] -v `symmetricModelling -q -symmetry`	-onc "symmetricModelling -e -symmetry true"
+															-ofc "symmetricModelling -e -symmetry false";
+		}
+	}
+	else{
+		optionMenu -e -sl 8  $AriToolSettingOptionMenu[1];	
+		textField -w 80 -text (`currentCtx`) -ed 0;			
+	}
+	setParent..;
+	setParent..;
+}
+global proc AriCompactToolSettings(){
+	global string $AriToolSettingForm[2];
+	global string $AriToolSettingSelectShelf;
+	global int $AriToolSettingUI_JPTrue;
+	global string $AriToolSetting_ShelfMenu_MainFrame[];
+	global string $AriToolSetting_shelfOputionMenu[];
+	global int $AriToolSettingUI_shelfTotal;
+	$AriToolSettingUI_shelfTotal=10;
+	for($i=0;$i<($AriToolSettingUI_shelfTotal+2);$i++){
+		$AriToolSetting_ShelfMenu_MainFrame[$i]="";
+	}
+	if(`about -uil`=="ja_JP")$AriToolSettingUI_JPTrue=true;
+	else $AriToolSettingUI_JPTrue=false;
+	if((`window -ex  AriCompactToolSettingsWindow`)==true)deleteUI AriCompactToolSettingsWindow;
+	string $window=`window -tlb 1 -title "Tool" AriCompactToolSettingsWindow`;
+	scrollLayout -childResizable true;
+	string $column=`columnLayout -adj true`;
+	columnLayout -adj true   AriToolSetting_Maincolumn;
+	if((`dockControl -ex  AriToolSettingsW`)==true)deleteUI AriToolSettingsW;
+	int $dockSize = 60;
+	if(`optionVar -exists "AriCompactTool_WindowWidth"`) $dockSize = `optionVar -q "AriCompactTool_WindowWidth"`;
+	dockControl -w $dockSize -area "left"
+	-content $window
+	-l "compact"
+	-allowedArea "left"
+	-allowedArea "right" AriToolSettingsW;
+	AriToolSetting_ToolMenu_Make;
+	int $shelfTotal=0;
+	for($i=0;$i<($AriToolSettingUI_shelfTotal+2);$i++){
+		string $loadShelf_string = ("AriCompactTool_Shelf"+$i);
+		if(`optionVar -exists $loadShelf_string`){
+			$shelfTotal++;
+		}
+		else break;
+	}
+	button -h 20 -l "+" -c ("AriToolSetting_ShelfMenu_Make") AriCompactToolSettings_PlusButton;
+	rowLayout -nc 2 -ad2 2;
+	string $widthResetButton=`iconTextButton -h 20 -i "arrowLeft.png" -c ("dockControl -e -w 80 AriToolSettingsW;")`;
+	button -h 20 -l "WidthSave" -c "AriToolSetting_saveWindowSize";
+	setParent..;
+	for($i=0;$i<$shelfTotal;$i++){
+		AriToolSetting_ShelfMenu_Make;
+	}
+	scriptJob -p "AriToolSettingsW" -event "ToolChanged"  "AriToolSetting_ToolMenu_Change";
+	scriptJob -p "AriToolSettingsW" -event "SelectionChanged"  "AriToolSetting_ToolMenu_Change";
+	showWindow;
+}

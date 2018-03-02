@@ -1,0 +1,1 @@
+putenv "MAYA_SCRIPT_PATH" "<Z:\@ Crafts\library\mayaScripts\mel>";

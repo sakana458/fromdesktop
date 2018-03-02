@@ -1,0 +1,161 @@
+xselect -r Waist_Bip ;
+select -add joint_Belly ;
+doCreatePointConstraintArgList 1 { "0","0","0","0","0","0","0","1","","1" };
+pointConstraint -offset 0 0 0 -weight 1;
+// Result: joint_Belly_pointConstraint1 // 
+select -r Waist_Bip ;
+select -add joint_Spine1 ;
+doCreatePointConstraintArgList 1 { "0","0","0","0","0","0","0","1","","1" };
+pointConstraint -offset 0 0 0 -weight 1;
+// Result: joint_Spine1_pointConstraint1 // 
+select -cl  ;
+select -r Belly_Eff ;
+select -add joint_Belly ;
+doCreateOrientConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" };
+orientConstraint -mo -weight 1;
+// Result: joint_Belly_orientConstraint1 // 
+select -r Spine1_Eff ;
+select -add joint_Spine1 ;
+doCreateOrientConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" };
+orientConstraint -mo -weight 1;
+// Result: joint_Spine1_orientConstraint1 // 
+
+
+//Hand
+select -r joint_L_Shoulder.rotatePivot ;
+select -add joint_L_Hand.rotatePivot ;
+ikHandle;
+
+select -r joint_R_Shoulder.rotatePivot ;
+select -add joint_R_Hand.rotatePivot ;
+ikHandle;
+
+
+//Foot
+select -r joint_L_Thigh.rotatePivot ;
+select -add joint_L_Foot.rotatePivot ;
+ikHandle -sol ikSCsolver;
+
+select -r joint_R_Thigh.rotatePivot ;
+select -add joint_R_Foot.rotatePivot ;
+ikHandle -sol ikSCsolver;
+
+
+//Toe
+select -r joint_L_Foot.rotatePivot ;
+select -add joint_L_Toe.rotatePivot ;
+ikHandle -sol ikSCsolver;
+
+select -r joint_R_Foot.rotatePivot ;
+select -add joint_R_Toe.rotatePivot ;
+ikHandle -sol ikSCsolver;
+
+rename "ikHandle1" "ikHandle_L_Hand";
+rename "ikHandle2" "ikHandle_R_Hand";
+
+rename "ikHandle3" "ikHandle_L_Foot";
+rename "ikHandle4" "ikHandle_R_Foot";
+
+rename "ikHandle5" "ikHandle_L_Toe";
+rename "ikHandle6" "ikHandle_R_Toe";
+
+//Parent
+parent ikHandle_L_Hand chr10029_002_0_6_Bone ;
+parent ikHandle_R_Hand chr10029_002_0_6_Bone ;
+parent ikHandle_L_Foot chr10029_002_0_6_Bone ;
+parent ikHandle_R_Foot chr10029_002_0_6_Bone ;
+parent ikHandle_L_Toe chr10029_002_0_6_Bone ;
+parent ikHandle_R_Toe chr10029_002_0_6_Bone ;
+
+//////Constraint
+//Hand
+select -r L_Hand_Eff ;
+select -add ikHandle_L_Hand ;
+doCreatePointConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" };
+pointConstraint -mo -weight 1;
+
+select -r R_Hand_Eff ;
+select -add ikHandle_R_Hand ;
+doCreatePointConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" };
+pointConstraint -mo -weight 1;
+
+//Foot
+select -r L_Foot_Eff ;
+select -add ikHandle_L_Foot ;
+doCreatePointConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" };
+pointConstraint -mo -weight 1;
+
+select -r R_Foot_Eff ;
+select -add ikHandle_R_Foot ;
+doCreatePointConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" };
+pointConstraint -mo -weight 1;
+
+//Toe
+select -r L_Toe_Eff ;
+select -add ikHandle_L_Toe ;
+doCreatePointConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" };
+pointConstraint -mo -weight 1;
+
+select -r R_Toe_Eff ;
+select -add ikHandle_R_Toe ;
+doCreatePointConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" };
+pointConstraint -mo -weight 1;
+
+
+
+
+
+
+select -r Head_Eff ;
+select -tgl joint_Head ;
+doCreateOrientConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" };
+orientConstraint -mo -weight 1;
+
+select -r Spine2_Eff ;
+select -tgl joint_Spine2 ;
+doCreateOrientConstraintArgList 1 { "1","0","0","0","0","0","0","a1","","1" };
+orientConstraint -mo -weight 1;
+
+
+select -r Hair_Eff;
+select -tgl joint_Hair ;
+doCreateOrientConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" };
+orientConstraint -mo -weight 1;
+
+
+
+
+select -r L_Hand_Eff ;
+select -tgl joint_L_Hand ;
+doCreateOrientConstraintArgList 1 { "0","0","0","0","0","0","0","1","","1" };
+orientConstraint -offset 0 0 0 -weight 1;
+// Result: joint_L_Hand_orientConstraint1 // 
+select -r R_Hand_Eff ;
+select -tgl joint_R_Hand ;
+doCreateOrientConstraintArgList 1 { "0","0","0","0","0","0","0","1","","1" };
+orientConstraint -offset 0 0 0 -weight 1;
+// Result: joint_R_Hand_orientConstraint1 //
+
+
+
+
+select -r L_Mantle_Eff;
+select -tgl joint_L_Mantle;
+doCreateOrientConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" };
+orientConstraint -mo -weight 1;
+
+select -r L_Mantle_Eff1;
+select -tgl joint_L_Mantle1;
+doCreateOrientConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" };
+orientConstraint -mo -weight 1;
+
+
+select -r R_Mantle_Eff;
+select -tgl joint_R_Mantle;
+doCreateOrientConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" };
+orientConstraint -mo -weight 1;
+
+select -r R_Mantle_Eff1;
+select -tgl joint_R_Mantle1;
+doCreateOrientConstraintArgList 1 { "1","0","0","0","0","0","0","1","","1" };
+orientConstraint -mo -weight 1;

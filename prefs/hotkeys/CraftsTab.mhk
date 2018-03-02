@@ -1,0 +1,177 @@
+//Maya Preference 2017 (Release 1)
+//
+//
+
+//
+// The runtime commands referenced by the hotkeys
+//
+runTimeCommand
+	-annotation "最後に選択したオブジェクトに位置を合わせる"
+	-category "Custom Scripts"
+	-hotkeyCtx ""
+	-commandLanguage "mel"
+	-command ("ModObjectsMenu MayaWindow|mainModifyMenu;\nperformAlignObjects 0;")
+	Alignment;
+
+runTimeCommand
+	-annotation "位置合わせのオプション表示"
+	-category "Custom Scripts"
+	-hotkeyCtx ""
+	-commandLanguage "mel"
+	-command ("ModObjectsMenu MayaWindow|mainModifyMenu;\nperformAlignObjects 1;")
+	AlignmentOption;
+
+runTimeCommand
+	-annotation "選択したオブジェクトをテンプレート化"
+	-category "Custom Scripts"
+	-hotkeyCtx ""
+	-commandLanguage "mel"
+	-command ("TemplateObject;")
+	template;
+
+runTimeCommand
+	-annotation "選択したオブジェクトをテンプレート化する"
+	-category "Custom Scripts"
+	-hotkeyCtx ""
+	-commandLanguage "mel"
+	-command ("UntemplateObject;")
+	Untemplate;
+
+//
+// The name commands referenced by the hotkeys
+//
+nameCommand
+	-annotation "SlideEdgeToolNameCommand"
+	-sourceType "mel"
+	-command ("SlideEdgeTool")
+	SlideEdgeToolNameCommand;
+
+nameCommand
+	-annotation "CombinePolygonsNameCommand"
+	-sourceType "mel"
+	-command ("CombinePolygons")
+	CombinePolygonsNameCommand;
+
+nameCommand
+	-annotation "ExtractFaceNameCommand"
+	-sourceType "mel"
+	-command ("ExtractFace")
+	ExtractFaceNameCommand;
+
+nameCommand
+	-annotation "SeparatePolygonNameCommand"
+	-sourceType "mel"
+	-command ("SeparatePolygon")
+	SeparatePolygonNameCommand;
+
+nameCommand
+	-annotation "FillHoleNameCommand"
+	-sourceType "mel"
+	-command ("FillHole")
+	FillHoleNameCommand;
+
+nameCommand
+	-annotation "ConnectComponentsNameCommand"
+	-sourceType "mel"
+	-command ("ConnectComponents")
+	ConnectComponentsNameCommand;
+
+nameCommand
+	-annotation "DeleteNameCommand"
+	-sourceType "mel"
+	-command ("Delete")
+	DeleteNameCommand;
+
+nameCommand
+	-annotation "dR_extrudeToolNameCommand"
+	-sourceType "mel"
+	-command ("dR_extrudeTool")
+	dR_extrudeToolNameCommand;
+
+nameCommand
+	-annotation "dR_bridgeToolNameCommand"
+	-sourceType "mel"
+	-command ("dR_bridgeTool")
+	dR_bridgeToolNameCommand;
+
+nameCommand
+	-annotation "dR_symmetryTGLNameCommand"
+	-sourceType "mel"
+	-command ("dR_symmetryTGL")
+	dR_symmetryTGLNameCommand;
+
+nameCommand
+	-annotation "AlignmentNameCommand"
+	-sourceType "mel"
+	-command ("Alignment")
+	AlignmentNameCommand;
+
+nameCommand
+	-annotation "AlignmentOptionNameCommand"
+	-sourceType "mel"
+	-command ("AlignmentOption")
+	AlignmentOptionNameCommand;
+
+nameCommand
+	-annotation "ShowAttributeEditorOrChannelBoxNameCommand"
+	-sourceType "mel"
+	-command ("ShowAttributeEditorOrChannelBox")
+	ShowAttributeEditorOrChannelBoxNameCommand;
+
+nameCommand
+	-annotation "templateNameCommand"
+	-sourceType "mel"
+	-command ("template")
+	templateNameCommand;
+
+nameCommand
+	-annotation "UntemplateNameCommand"
+	-sourceType "mel"
+	-command ("Untemplate")
+	UntemplateNameCommand;
+
+//
+// The user hotkeys
+//
+//
+// The hotkey set
+//
+hotkeySet -source "Maya_Default" -current CraftsTab;
+//
+// The hotkey contexts and hotkeys
+//
+hotkey -keyShortcut "u" -ctl -name ("");
+hotkey -keyShortcut "e" -ctl -alt -name ("dR_extrudeToolNameCommand");
+hotkey -keyShortcut "w" -ctl -name ("AlignmentNameCommand");
+hotkey -keyShortcut "e" -ctl -sht -name ("SlideEdgeToolNameCommand");
+hotkey -keyShortcut "k" -ctl -sht -name ("UntemplateNameCommand");
+hotkey -keyShortcut "b" -ctl -name ("dR_bridgeToolNameCommand");
+hotkey -keyShortcut "f" -ctl -sht -name ("FillHoleNameCommand");
+hotkey -keyShortcut "j" -alt -name ("SeparatePolygonNameCommand");
+hotkey -keyShortcut "w" -ctl -alt -name ("");
+hotkey -keyShortcut "q" -ctl -alt -name ("");
+hotkey -keyShortcut "w" -ctl -sht -name ("AlignmentOptionNameCommand");
+hotkey -keyShortcut "f" -ctl -name ("ConnectComponentsNameCommand");
+hotkey -keyShortcut "x" -ctl -name ("DeleteNameCommand");
+hotkey -keyShortcut "a" -ctl -name ("ShowAttributeEditorOrChannelBoxNameCommand");
+hotkey -keyShortcut "j" -ctl -name ("CombinePolygonsNameCommand");
+hotkey -keyShortcut "k" -ctl -name ("templateNameCommand");
+hotkey -keyShortcut "j" -alt -sht -name ("ExtractFaceNameCommand");
+hotkey -keyShortcut "l" -ctl -name ("dR_symmetryTGLNameCommand");
+hotkey -keyShortcut "e" -ctl -name ("PolyExtrudeNameCommand");
+hotkeyCtx -type "Editor" -addClient "cteEditor";
+hotkeyCtx -type "Editor" -addClient "polyTexturePlacementPanel";
+hotkeyCtx -type "Editor" -addClient "outlinerPanel";
+hotkeyCtx -type "Editor" -addClient "shapePanel";
+hotkeyCtx -type "Editor" -addClient "hyperGraphPanel";
+hotkeyCtx -type "Editor" -addClient "nodeEditorPanel";
+hotkeyCtx -type "Editor" -addClient "timeEditorPanel";
+hotkeyCtx -type "Editor" -addClient "profilerPanel";
+hotkeyCtx -type "Editor" -addClient "posePanel";
+hotkeyCtx -type "Editor" -addClient "hyperShadePanel";
+hotkeyCtx -type "Editor" -addClient "graphEditor";
+hotkeyCtx -type "Tool" -addClient "Unfold3DBrush";
+hotkeyCtx -type "Tool" -addClient "texSculptCacheContext";
+hotkeyCtx -type "Tool" -addClient "SymmetrizeUVBrush";
+hotkeyCtx -type "Tool" -addClient "sculptMeshCache";
+hotkeyCtx -type "Tool" -addClient "texCutContext";

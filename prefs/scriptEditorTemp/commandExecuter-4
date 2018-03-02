@@ -1,0 +1,73 @@
+global string $gMainWindow;
+    setParent $gMainWindow;
+    menu
+    -label "CraftsTab"
+    -parent $gMainWindow
+    -tearOff on;
+
+    menuItem
+      -label "Renamer"
+      -command "AriRenamer"
+      -echoCommand true;
+
+    menuItem
+      -label "Mirror"
+      -command "AriMirror"
+      -echoCommand true;
+
+    menuItem
+      -label "SymmetryChecker"
+      -command "AriSymmetryChecker"
+      -echoCommand true;
+
+    menuItem
+      -label "UVGridding"
+      -command "AriUVGridding"
+      -echoCommand true;
+
+    menuItem
+      -label "PolygonCounter"
+      -command "AriPolygonCounter"
+      -echoCommand true;
+
+    menuItem
+      -label "QuadrangulateRing"
+      -command "AriQuadrangulateRing"
+      -echoCommand true;
+
+    menuItem
+      -label "StraightVertexs"
+      -command "AriStraightVertexs"
+      -echoCommand true;
+
+    menuItem
+      -label "SetPivot"
+      -command "AriSetPivot"
+      -echoCommand true;
+      
+    menuItem
+      -label "UVRatio"
+      -command "AriUVRatio"
+      -echoCommand true;
+      
+    menuItem
+      -label "UVScaleChecker"
+      -command "AriUVScaleChecker"
+      -echoCommand true;
+      
+    menuItem
+      -label "ViewWindow"
+      -command "AriViewWindow"
+      -echoCommand true;
+      
+    menuItem
+      -label "TextureSize"
+      -command "TextureSize"
+      -echoCommand true;
+      
+    menuItem
+      -label "FileTextureManager"
+      -command "FileTextureManager"
+      -echoCommand true;
+      
+ 

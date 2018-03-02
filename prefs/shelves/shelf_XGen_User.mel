@@ -1,0 +1,32 @@
+global proc shelf_XGe_User () {
+    global string $gBuffStr;
+    global string $gBuffStr0;
+    global string $gBuffStr1;
+
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 34
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "パッチのバインド メニューです。" 
+        -enableBackground 0
+        -align "center" 
+        -label "Bind Patches" 
+        -labelOffset 0
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.25 
+        -image "C:/Program Files/Autodesk/Maya2015/plug-ins/xgen//icons/xgBindFaces.png" 
+        -image1 "C:/Program Files/Autodesk/Maya2015/plug-ins/xgen//icons/xgBindFaces.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "python(\"from PySide import QtGui\\nm = QtGui.QMenu()\\nm.addAction(u\\\"選択したフェースを追加\\\",  lambda: xgui.createDescriptionEditor(False).modifyBinding(\\\"Append\\\") )\\nm.addAction(u\\\"選択したフェースに置き換え\\\", lambda: xgui.createDescriptionEditor(False).modifyBinding(\\\"Replace\\\") )\\nm.addAction(u\\\"選択したフェースを除去\\\",  lambda: xgui.createDescriptionEditor(False).modifyBinding(\\\"Remove\\\") )\\nm.addAction(u\\\"マップに基づいてフェースをバインド...\\\",     lambda: xgui.createDescriptionEditor(False).modifyBinding(\\\"Map\\\") )\\nm.addSeparator()\\nm.addAction(u\\\"バインドされたフェースを選択\\\",  lambda: xgui.createDescriptionEditor(False).selectBinding() )\\nm.popup(QtGui.QCursor.pos())\\n\")" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+} 

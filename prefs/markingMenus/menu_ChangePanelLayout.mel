@@ -1,0 +1,203 @@
+
+    menuItem
+        -label "単一のパース ビュー" 
+        -divider 0
+        -subMenu 0
+        -tearOff 0
+        -command "setNamedPanelLayout \"単一のパース ビュー\";" 
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "N" 
+        -allowOptionBoxes 1
+        -postMenuCommandOnce 0
+        -enableCommandRepeat 1
+        -echoCommand 0
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem56;
+
+    menuItem
+        -label "ハイパーシェード/レンダー/パース ビュー" 
+        -divider 0
+        -subMenu 0
+        -tearOff 0
+        -command "setNamedPanelLayout \"ハイパーシェード/レンダー/パース ビュー\";" 
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "NE" 
+        -allowOptionBoxes 1
+        -postMenuCommandOnce 0
+        -enableCommandRepeat 1
+        -echoCommand 0
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem57;
+
+    menuItem
+        -label "ハイパーシェード/アウトライナ/パース ビュー" 
+        -divider 0
+        -subMenu 0
+        -tearOff 0
+        -command "setNamedPanelLayout \"ハイパーシェード/アウトライナ/パース ビュー\";" 
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "SE" 
+        -allowOptionBoxes 1
+        -postMenuCommandOnce 0
+        -enableCommandRepeat 1
+        -echoCommand 0
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem58;
+
+    menuItem
+        -label "ハイパーシェード/パース ビュー" 
+        -divider 0
+        -subMenu 0
+        -tearOff 0
+        -command "setNamedPanelLayout \"ハイパーシェード/パース ビュー\";" 
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "E" 
+        -allowOptionBoxes 1
+        -postMenuCommandOnce 0
+        -enableCommandRepeat 1
+        -echoCommand 0
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem59;
+
+    menuItem
+        -label "Toggle Outliner" 
+        -divider 0
+        -subMenu 0
+        -tearOff 0
+        -command "ToggleOutliner" 
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "S" 
+        -allowOptionBoxes 1
+        -postMenuCommandOnce 0
+        -enableCommandRepeat 1
+        -echoCommand 0
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem60;
+
+    menuItem
+        -label "パース ビュー/グラフ/アウトライナ" 
+        -divider 0
+        -subMenu 0
+        -tearOff 0
+        -command "setNamedPanelLayout \"パース ビュー/グラフ/アウトライナ\";" 
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "SW" 
+        -allowOptionBoxes 1
+        -postMenuCommandOnce 0
+        -enableCommandRepeat 1
+        -echoCommand 0
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem61;
+
+    menuItem
+        -label "パース ビュー/グラフ" 
+        -divider 0
+        -subMenu 0
+        -tearOff 0
+        -command "setNamedPanelLayout \"パース ビュー/グラフ\";" 
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "W" 
+        -allowOptionBoxes 1
+        -postMenuCommandOnce 0
+        -enableCommandRepeat 1
+        -echoCommand 0
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem62;
+
+    menuItem
+        -label "パース ビュー/リレーションシップ エディタ" 
+        -divider 0
+        -subMenu 0
+        -tearOff 0
+        -command "setNamedPanelLayout \"パース ビュー/リレーションシップ エディタ\";" 
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "NW" 
+        -allowOptionBoxes 1
+        -postMenuCommandOnce 0
+        -enableCommandRepeat 1
+        -echoCommand 0
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem63;
+
+setParent -m ..;
+

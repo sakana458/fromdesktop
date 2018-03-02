@@ -1,0 +1,196 @@
+//--------------------------------------------------------------------------
+//
+// ScriptName : AriQuadrangulateRing
+// Contents   : 端から順番に四角形化を行います。
+// Author     : Ari
+// URL        : http://cgjishu.net
+// Since      : 2018/21
+// Note       : 三角ポリゴンのフェースをループ状に選択して実行。
+//
+//--------------------------------------------------------------------------
+
+proc string[] AriGetEdgeRingList(string  $getList_edges[],int $verMode){
+	
+	global string $gMainProgressBar;
+	string $getList_face[];
+	int $borderCounter=0;
+	for($i=0;$i<size($getList_edges);$i++){
+		string $edgeToface[] = `polyListComponentConversion -tf $getList_edges[$i]`;
+		$edgeToFace = `filterExpand -selectionMask 34 $edgeToface`;
+		for($j=0;$j<size($edgeToFace);$j++){
+			string $verList[] = `polyListComponentConversion -tv $edgeToFace[$j]`;
+			$verList = `filterExpand -selectionMask 31 $verList`;
+			if(size($verList) >= 4){
+				$edgeToFace[$j] = ("[boundar]"+$borderCounter);
+				$borderCounter++;
+			}
+		}
+		if(size($edgeToFace)==1){
+			$edgeToFace[1] = ("[boundar]"+$borderCounter);
+			$borderCounter++;
+		}
+		$getList_face = stringArrayCatenate( $getList_face, $edgeToFace );
+	}
+	int $maxVal = size($getList_edges);
+	progressBar -e -maxValue ($maxVal) -pr 0 -beginProgress  -isInterruptable true $gMainProgressBar;
+	int $breakTrue = false;
+	string $sort_edgeList[];
+	string $sort_faceList[];
+	int $count=0;
+	for($i=0;$i<size($getList_edges);$i++){
+		if(stringArrayContains($getList_edges[$i], $sort_edgeList))continue; 
+		int $verNum1 = $i*2;
+		string $nowEdge;
+		string $workEdgeList[];
+		string $workFaceList[];
+		clear $workEdgeList;
+		clear $workFaceList;
+		int $workEdgeListCounter=0;
+		string $leadEdge;
+		int $loopTrue = false;
+		for($k=0;$k<2;$k++){
+			$nowEdge = $getList_edges[$i];
+			string $nowFace = $getList_face[$i*2+$k];
+			int $n=0;
+			if(!stringArrayContains($nowFace,$sort_faceList)){
+				$workFaceList[0]   = $nowFace;
+				string $beforeEdge = $nowFace;
+				while($n<100000){
+					for($j=0;$j<size($getList_edges);$j++){
+						if(                    $getList_edges[$j] == $nowEdge  )continue;     
+						if(stringArrayContains($getList_edges[$j],   $workEdgeList))continue; 
+						if(stringArrayContains($getList_edges[$j],   $sort_edgeList))continue;
+						int $verNum2 = $j*2;
+						if($nowFace == $getList_face[$verNum2]){
+							$nowEdge = $getList_edges[$j];
+							$nowFace = $getList_face[$verNum2+1];
+							if(!stringArrayContains($nowFace,$workFaceList)){
+								$workEdgeList[$workEdgeListCounter]   = $nowEdge;
+								$workFaceList[$workEdgeListCounter+1] = $nowFace;
+								$workEdgeListCounter++;
+							}
+							else{
+								$loopTrue = true;
+							}
+							break;
+						}
+						if($nowFace == $getList_face[$verNum2+1]){
+							$nowEdge   = $getList_edges[$j];
+							$nowFace = $getList_face[$verNum2];
+							if(!stringArrayContains($nowFace,$workFaceList)){
+								$workEdgeList[$workEdgeListCounter]     = $nowEdge;
+								$workFaceList[$workEdgeListCounter+1] = $nowFace;
+								$workEdgeListCounter++;
+							}
+							else{
+								$loopTrue = true;
+							}
+							break;
+						}
+					}
+					if($beforeEdge == $nowFace)break;
+					$beforeEdge=$nowFace;
+					$n++;
+				}
+			}
+			string $plusEdge_Work[]   = $workEdgeList;
+			string $plusVertex_Work[] = $workFaceList;
+			if($k==0){
+				for($j=0;$j<size($workEdgeList);$j++){
+					$plusEdge_Work[(size($workEdgeList))-$j-1] = $workEdgeList[$j];
+				}
+				for($j=0;$j<size($workFaceList);$j++){
+					$plusVertex_Work[(size($workFaceList))-$j-1] = $workFaceList[$j];
+				}
+			}
+			$sort_edgeList   = stringArrayCatenate( $sort_edgeList,   $plusEdge_Work );
+			$sort_faceList = stringArrayCatenate( $sort_faceList, $plusVertex_Work );
+			if($k==0){
+				if($plusEdge_Work[0] != $getList_edges[$i]){
+					$sort_edgeList[size($sort_edgeList)]=$getList_edges[$i];
+				}
+				else{
+					$loopTrue = true;
+				}
+			}
+			else{
+				string $sepaString="--";
+				if($loopTrue)$sepaString="--Loop";
+				$sort_edgeList[size($sort_edgeList)]     = $sepaString;
+				$sort_faceList[size($sort_faceList)] = $sepaString;
+			}
+			clear $workEdgeList;
+			clear $workFaceList;
+			$workEdgeListCounter=0;
+			int $sortSize = size($sort_edgeList);
+			progressBar -e -pr $sortSize -isInterruptable true $gMainProgressBar;
+			if(`progressBar -query -isCancelled $gMainProgressBar`){
+				print ("中断---------------------------------\n");
+				$breakTrue = true;
+				break;
+			}
+		}
+		if($breakTrue)break;
+	}
+	if($breakTrue){
+		print"中断\n";
+	}
+	progressBar -e -pr 0 $gMainProgressBar;
+	progressBar -e -endProgress $gMainProgressBar;
+	if($verMode) return $sort_faceList;
+	else         return $sort_edgeList;
+}
+global proc AriQuadrangulateRing(){
+	string $selects[] = `ls -sl`;
+	string $edges[] = `filterExpand -selectionMask 32 $selects`;
+	int $faceMode=false;
+	if(size($edges)==0){
+		string $faceList[] = `filterExpand -selectionMask 34 $selects`;
+		if(size($faceList)==0)return;
+		$faceMode=true;
+		int $i=0,$j=0;
+		string $doubleEdgeList[];
+		string $getEdgeList[];
+		for($face in $faceList){
+			string $edges[] = `polyListComponentConversion -toEdge $face`;
+			$edges = `filterExpand -selectionMask 32 $edges`;
+			if(size($edges)>=4)continue;
+			for($edge in $edges){
+				if(stringArrayContains($edge,$getEdgeList)){
+					$doubleEdgeList[$j] = $edge;
+					$j++;
+				}
+				$getEdgeList[$i] = $edge;
+				$i++;
+			}
+		}
+		$edges=$doubleEdgeList;
+	}
+	if(size($edges)<=0)return;
+	string $sortEdgeList[] = (AriGetEdgeRingList($edges,0));
+	int $divisible=1;
+	if($faceMode){
+		$divisible = 0;
+	}
+	string $centerEdgeList[];
+	int $counter=0;
+	int $i=0;
+	for($edge in $sortEdgeList){
+		if($edge == "--" || $edge == "--Loop"){
+			$counter=0;
+			continue;
+		}
+		if($counter%2 == $divisible){
+			$centerEdgeList[$i]=$edge;
+			$i++;
+			if($faceMode==true)$counter = 1;
+			if($faceMode==false)$counter = 0;
+		}
+		else{
+			$counter++;
+		}
+	}
+	if(size($centerEdgeList)<=0)return;
+	delete $centerEdgeList;
+	select -cl;
+}

@@ -1,0 +1,7 @@
+//Maya Preference 2015 (Release 1)
+//
+//
+filePathEditor -registerType "audio.filename" -typeLabel "オーディオ" ;
+filePathEditor -registerType "file" -typeLabel "テクスチャ" ;
+filePathEditor -registerType "imagePlane.imageName" -typeLabel "イメージ プレーン" ;
+filePathEditor -registerType "reference" -typeLabel "リファレンス" ;

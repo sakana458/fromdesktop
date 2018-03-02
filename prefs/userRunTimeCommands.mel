@@ -1,0 +1,36 @@
+//Maya Preference 2017 (Release 1)
+//
+//
+
+runTimeCommand
+	-annotation "位置合わせのオプション表示"
+	-category "Custom Scripts"
+	-hotkeyCtx ""
+	-commandLanguage "mel"
+	-command ("ModObjectsMenu MayaWindow|mainModifyMenu;\nperformAlignObjects 1;")
+	AlignmentOption;
+
+runTimeCommand
+	-annotation "最後に選択したオブジェクトに位置を合わせる"
+	-category "Custom Scripts"
+	-hotkeyCtx ""
+	-commandLanguage "mel"
+	-command ("ModObjectsMenu MayaWindow|mainModifyMenu;\nperformAlignObjects 0;")
+	Alignment;
+
+runTimeCommand
+	-annotation "選択したオブジェクトをテンプレート化する"
+	-category "Custom Scripts"
+	-hotkeyCtx ""
+	-commandLanguage "mel"
+	-command ("UntemplateObject;")
+	Untemplate;
+
+runTimeCommand
+	-annotation "選択したオブジェクトをテンプレート化"
+	-category "Custom Scripts"
+	-hotkeyCtx ""
+	-commandLanguage "mel"
+	-command ("TemplateObject;")
+	template;
+

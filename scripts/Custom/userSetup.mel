@@ -1,0 +1,39 @@
+global string $gMainWindow;
+    setParent $gMainWindow;
+    menu
+    -label "CraftsTab"
+    -parent $gMainWindow
+    -tearOff on;
+    menuItem
+      -label "Mirror"
+      -command "AriMirror"
+      -echoCommand true;
+    menuItem
+      -label "Renamer"
+      -command "AriRenamer"
+      -echoCommand true;
+
+    menuItem
+      -label "SymmetryChecker"
+      -command "AriSymmetryChecker"
+      -echoCommand true;
+
+    menuItem
+      -label "UVGridding"
+      -command "AriUVGridding"
+      -echoCommand true;
+
+    menuItem
+      -label "PolygonCounter"
+      -command "AriPolygonCounter"
+      -echoCommand true;
+
+    menuItem
+      -label "QuadrangulateRing"
+      -command "AriQuadrangulateRing"
+      -echoCommand true;
+
+    menuItem
+      -label "StraightVertexs"
+      -command "AriStraightVertexs"
+      -echoCommand true;

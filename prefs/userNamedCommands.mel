@@ -1,0 +1,142 @@
+//Maya Preference 2017 (Release 1)
+//
+//
+
+nameCommand
+	-annotation "SlideEdgeToolNameCommand"
+	-sourceType "mel"
+	-command ("SlideEdgeTool")
+	SlideEdgeToolNameCommand;
+
+nameCommand
+	-annotation "TransformPolygonComponentNameCommand"
+	-sourceType "mel"
+	-command ("TransformPolygonComponent")
+	TransformPolygonComponentNameCommand;
+
+nameCommand
+	-annotation "CombinePolygonsNameCommand"
+	-sourceType "mel"
+	-command ("CombinePolygons")
+	CombinePolygonsNameCommand;
+
+nameCommand
+	-annotation "ExtractFaceNameCommand"
+	-sourceType "mel"
+	-command ("ExtractFace")
+	ExtractFaceNameCommand;
+
+nameCommand
+	-annotation "SeparatePolygonNameCommand"
+	-sourceType "mel"
+	-command ("SeparatePolygon")
+	SeparatePolygonNameCommand;
+
+nameCommand
+	-annotation "FillHoleNameCommand"
+	-sourceType "mel"
+	-command ("FillHole")
+	FillHoleNameCommand;
+
+nameCommand
+	-annotation "ConnectComponentsNameCommand"
+	-sourceType "mel"
+	-command ("ConnectComponents")
+	ConnectComponentsNameCommand;
+
+nameCommand
+	-annotation "DeleteNameCommand"
+	-sourceType "mel"
+	-command ("Delete")
+	DeleteNameCommand;
+
+nameCommand
+	-annotation "BridgeEdgeNameCommand"
+	-sourceType "mel"
+	-command ("BridgeEdge")
+	BridgeEdgeNameCommand;
+
+nameCommand
+	-annotation "dR_extrudeToolNameCommand"
+	-sourceType "mel"
+	-command ("dR_extrudeTool")
+	dR_extrudeToolNameCommand;
+
+nameCommand
+	-annotation "ConnectComponentsOptionsNameCommand"
+	-sourceType "mel"
+	-command ("ConnectComponentsOptions")
+	ConnectComponentsOptionsNameCommand;
+
+nameCommand
+	-annotation "dR_overlayAppendMeshTGLNameCommand"
+	-sourceType "mel"
+	-command ("dR_overlayAppendMeshTGL")
+	dR_overlayAppendMeshTGLNameCommand;
+
+nameCommand
+	-annotation "dR_slideEdgeNameCommand"
+	-sourceType "mel"
+	-command ("dR_slideEdge")
+	dR_slideEdgeNameCommand;
+
+nameCommand
+	-annotation "dR_bridgeToolNameCommand"
+	-sourceType "mel"
+	-command ("dR_bridgeTool")
+	dR_bridgeToolNameCommand;
+
+nameCommand
+	-annotation "TransferVertexOrderNameCommand"
+	-sourceType "mel"
+	-command ("TransferVertexOrder")
+	TransferVertexOrderNameCommand;
+
+nameCommand
+	-annotation "dR_symmetryTGLNameCommand"
+	-sourceType "mel"
+	-command ("dR_symmetryTGL")
+	dR_symmetryTGLNameCommand;
+
+nameCommand
+	-annotation "dR_selConstraintOffNameCommand"
+	-sourceType "mel"
+	-command ("dR_selConstraintOff")
+	dR_selConstraintOffNameCommand;
+
+nameCommand
+	-annotation "dR_slideOffNameCommand"
+	-sourceType "mel"
+	-command ("dR_slideOff")
+	dR_slideOffNameCommand;
+
+nameCommand
+	-annotation "AlignmentNameCommand"
+	-sourceType "mel"
+	-command ("Alignment")
+	AlignmentNameCommand;
+
+nameCommand
+	-annotation "AlignmentOptionNameCommand"
+	-sourceType "mel"
+	-command ("AlignmentOption")
+	AlignmentOptionNameCommand;
+
+nameCommand
+	-annotation "ShowAttributeEditorOrChannelBoxNameCommand"
+	-sourceType "mel"
+	-command ("ShowAttributeEditorOrChannelBox")
+	ShowAttributeEditorOrChannelBoxNameCommand;
+
+nameCommand
+	-annotation "templateNameCommand"
+	-sourceType "mel"
+	-command ("template")
+	templateNameCommand;
+
+nameCommand
+	-annotation "UntemplateNameCommand"
+	-sourceType "mel"
+	-command ("Untemplate")
+	UntemplateNameCommand;
+

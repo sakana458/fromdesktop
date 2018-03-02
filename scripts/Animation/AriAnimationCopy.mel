@@ -1,0 +1,187 @@
+//--------------------------------------------------------------------------
+//
+// ScriptName : AriAnimationCopy
+// Contents   : アニメーションのコピーをオブジェクト間で簡潔に行います。
+// Author     : Ari
+// URL        : http://cgjishu.net
+// Since      : 2017/12
+//
+//--------------------------------------------------------------------------
+
+
+global proc AriAnimationCopy_Copy(){
+	
+	global string $AriAniNodeCopy_optionMenu;
+	global string $AriAniNodeCopy_menuItem[];
+	
+	global string $AriAnimationCopy_GetNodeList[];
+	string $selects[0] = `ls -sl -tr`;
+	if(size($selects)==0)return;
+	if(size($AriAniNodeCopy_menuItem) != 0){
+		deleteUI $AriAniNodeCopy_menuItem;
+	}
+	clear $AriAniNodeCopy_menuItem;
+	$AriAnimationCopy_GetNodeList = `listConnections -c 1 -p 1 -d 0 -s 1 -type "animCurve" $selects`;
+	print $AriAnimationCopy_GetNodeList;
+	string $objAttrList[];
+	string $sourceAttrList[];
+	for($j=0;$j<(size($AriAnimationCopy_GetNodeList)/2);$j++){
+		$objAttrList[$j]    = $AriAnimationCopy_GetNodeList[$j*2];
+		$sourceAttrList[$j] = $AriAnimationCopy_GetNodeList[$j*2+1];
+	}
+	string $objList[];
+	int $i;
+	for($objAttr in $objAttrList){
+		string $sepa[];
+		tokenize $objAttr "." $sepa;
+		string $obj = $sepa[0];
+		if(!stringArrayContains($obj, $objList)){
+			$objList[$i] = $obj;
+			$i++;
+		}
+	}
+	for($i=0; $i<size($objList); $i++){
+		$AriAniNodeCopy_menuItem[$i] = `menuItem -p $AriAniNodeCopy_optionMenu -label $objList[$i]`;
+	}
+}
+proc AriAnimationCopy_Paste(){
+	global string $AriAnimationCopy_GetNodeList[];
+	for($j=0;$j<(size($AriAnimationCopy_GetNodeList)/2);$j++){
+		string $base       = $AriAnimationCopy_GetNodeList[$j*2];
+		string $sourceList = $AriAnimationCopy_GetNodeList[$j*2+1];
+	}
+	return;
+	string $selects[] = `ls -sl -tr`;
+	if($selects[0]=="")return;
+	string $target = $selects[0];
+	string $connectList[] = `listConnections -c 0 -p 1 -d 0 -s 1 -type "animCurve" $target`;
+	print $connectList;
+	for($conne in $connectList){
+		string $sepa[];
+		tokenize $conne "." $sepa;
+		delete $sepa[0];
+	}
+	for($j=0;$j<(size($AriAnimationCopy_GetNodeList)/2);$j++){
+		string $base       = $AriAnimationCopy_GetNodeList[$j*2];
+		string $sourceList = $AriAnimationCopy_GetNodeList[$j*2+1];
+		string $sepa[];
+		tokenize $base "." $sepa;
+		string $baseAttr = $sepa[1];
+		tokenize $sourceList "." $sepa;
+		string $sourceNode = $sepa[0];
+		string $sourceAttr = $sepa[1];
+		string $dupName[] = `duplicate  -n ($target+"_"+$baseAttr) $sourceNode `;
+		string $newNodeName = $dupName[0];
+		print ($newNodeName+"\n");;
+		string $newNodeAttr = $newNodeName +"."+ $sourceAttr;
+		print ($newNodeAttr+"\n");
+		string $targetAttr = $target +"."+ $baseAttr;
+		print ($targetAttr+"\n");
+		print ($newNodeAttr+ " >> " +$targetAttr+"\n");
+		connectAttr -f $newNodeAttr $targetAttr;
+	}
+}
+proc AriAnimationCopy_Paste_GO(string $sourceNode, string $outAttr, string $targetObj ,string $inAttr){
+	string $dupName[] = `duplicate  -n ($targetObj+"_"+$inAttr) $sourceNode `;
+	string $newNodeName = $dupName[0];
+	string $newNodeAttr = $newNodeName +"."+ $outAttr;
+	string $targetObjAttr = $targetObj +"."+ $inAttr;
+	print ($newNodeAttr+ " >> " +$targetObjAttr+"\n");
+	string $connects[] = `listConnections -c 0 -p 0 -d 0 -s 1 -type "animCurve" $targetObjAttr`;
+	string $connect = $connects[0];
+	int $setTrue = `getAttr -settable $targetObjAttr`;
+	if($setTrue==0)return;
+	connectAttr -f $newNodeAttr $targetObjAttr;
+	if($connect != ""){
+		string $destinationConnects[] = `listConnections -c 0 -p 0 -d 1 -s 0  $connect`;
+		if(size($destinationConnects)==0){
+			delete $connect;
+		}
+	}
+}
+global proc AriAnimationCopy_Paste_Button(){
+	global string $AriAnimationCopy_GetNodeList[];
+	global string $AriAniNodeCopy_optionMenu;
+	string $objAttrList[];
+	string $sourceAttrList[];
+	for($j=0;$j<(size($AriAnimationCopy_GetNodeList)/2);$j++){
+		$objAttrList[$j]    = $AriAnimationCopy_GetNodeList[$j*2];
+		$sourceAttrList[$j] = $AriAnimationCopy_GetNodeList[$j*2+1];
+	}
+	string $objList[];
+	string $inAttrList[];
+	string $nodeList[];
+	string $outAttrList[];	
+	for($j=0;$j<(size($objAttrList));$j++){
+		string $sepa[];
+		tokenize $objAttrList[$j] "." $sepa;
+		$objList[$j]    = $sepa[0];
+		$inAttrList[$j] = $sepa[1];
+		tokenize $sourceAttrList[$j] "." $sepa;
+		$nodeList[$j]    = $sepa[0];
+		$outAttrList[$j] = $sepa[1];
+	}
+	string $menuObj;
+	if(`optionMenu -q -ni $AriAniNodeCopy_optionMenu` != 0){
+		$menuObj = `optionMenu -q -v $AriAniNodeCopy_optionMenu`;
+	}
+	string $selectObjList[] = `ls -sl`;
+	for($j=0;$j<(size($objList));$j++){
+		if($objList[$j]==$menuObj){
+			for($selectObj in $selectObjList){
+				if($objList[$j] != $selectObj){
+					AriAnimationCopy_Paste_GO($nodeList[$j], $outAttrList[$j], $selectObj, $inAttrList[$j]);
+				}
+			}
+		}
+	}
+}
+global proc AriAnimationCopyKeyOffset(int $moveMode){
+	global string $AriAnimationCopy_UI_IntF[3];
+	float $val = `floatField -q -v $AriAnimationCopy_UI_IntF[0]`;
+	if($moveMode==0) $val = $val * -1;
+	string $selectList[] = `ls -sl  -tr`;
+	if(size($selectList)==0)return;
+	string $anikeyList[] = `listConnections -type "animCurve"`;
+	print $anikeyList;
+	if(size($anikeyList)==0)return;
+	keyframe -e -iub false -an objects  -r -o over -tc $val $anikeyList;
+}
+global proc AriAnimationCopy(){
+	global string $AriAniNodeCopy_optionMenu;
+	global string $AriAniNodeCopy_menuItem[];
+	global string $AriAnimationCopy_UI_IntF[3];
+	clear $AriAniNodeCopy_menuItem;
+	if((`window -ex  AriAnimationCopy`)==true)deleteUI AriAnimationCopy;
+	window -title "AriAnimationCopy"  -w 180 -h 100 AriAnimationCopy;
+	string $mainForm = `formLayout`;
+	$AriAniNodeCopy_optionMenu = `optionMenu`;
+	string $buttonCopy = `button  -l "Copy"  -c "AriAnimationCopy_Copy()"`;
+	string $buttonPaste = `button -l "Paste" -c "AriAnimationCopy_Paste_Button()"`;
+	$AriAnimationCopy_UI_IntF[0] = `floatField -v 1`;
+	string $buttonLeft  = `button -w 40 -l "<<" -c "AriAnimationCopyKeyOffset(0)"`;
+	string $buttonRight = `button -w 40 -l ">>" -c "AriAnimationCopyKeyOffset(1)"`;
+	setParent..;
+	formLayout -e
+		-af $AriAniNodeCopy_optionMenu "top" 0
+		-af $AriAniNodeCopy_optionMenu "left" 0
+		-af $AriAniNodeCopy_optionMenu "right" 0
+		-af $buttonLeft "bottom" 0
+		-af $buttonLeft "left" 0
+		-af $buttonRight "bottom" 0
+		-af $buttonRight "right" 0
+		-ac $buttonCopy "top"    0 $AriAniNodeCopy_optionMenu
+		-ac $buttonCopy "bottom" 0 $buttonRight
+		-af $buttonCopy "left"   0
+		-ap $buttonCopy "right"  0 50
+		-ac $buttonPaste "top"    0 $AriAniNodeCopy_optionMenu
+		-ac $buttonPaste "bottom" 0 $buttonRight
+		-af $buttonPaste "right"  0
+		-ap $buttonPaste "left"   0 50
+		-af $AriAnimationCopy_UI_IntF[0] "bottom"   0
+		-ac $AriAnimationCopy_UI_IntF[0] "left"  0 $buttonLeft
+		-ac $AriAnimationCopy_UI_IntF[0] "right" 0 $buttonRight
+		-ac $AriAnimationCopy_UI_IntF[0] "top"   0 $buttonCopy
+	$mainForm;
+	showWindow;
+}

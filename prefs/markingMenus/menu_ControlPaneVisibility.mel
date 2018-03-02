@@ -1,0 +1,314 @@
+
+    menuItem
+        -label "ヘルプ ライン" 
+        -divider 0
+        -subMenu 0
+        -tearOff 0
+        -command "toggleUIComponentVisibility \"Help Line\"; updatePrefsMenu" 
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "N" 
+        -allowOptionBoxes 1
+        -postMenuCommandOnce 0
+        -enableCommandRepeat 1
+        -echoCommand 0
+        -annotation "ヘルプ ラインのオン/オフを切り替えます" 
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem72;
+
+    menuItem
+        -label "ステータス ライン" 
+        -divider 0
+        -subMenu 0
+        -tearOff 0
+        -command "toggleUIComponentVisibility \"Status Line\"; updatePrefsMenu" 
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "NE" 
+        -allowOptionBoxes 1
+        -postMenuCommandOnce 0
+        -enableCommandRepeat 1
+        -echoCommand 0
+        -annotation "ステータス ラインのオン/オフを切り替えます" 
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem73;
+
+    menuItem
+        -label "アトリビュート" 
+        -divider 0
+        -subMenu 1
+        -tearOff 0
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "E" 
+        -allowOptionBoxes 1
+        -enableCommandRepeat 1
+        -annotation "アトリビュートの編集" 
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem74;
+
+        menuItem
+            -label "チャネル ボックス" 
+            -divider 0
+            -subMenu 0
+            -tearOff 0
+            -command "if (`optionVar -q channelsLayersSeparate`) {\r\n\ttoggleUIComponentVisibility \"Channel Box\";\r\n} else {\r\n\ttoggleUIComponentVisibility \"Channel Box / Layer Editor\";\r\n}\r\n; " 
+            -altModifier 0
+            -optionModifier 0
+            -commandModifier 0
+            -ctrlModifier 0
+            -shiftModifier 0
+            -optionBox 0
+            -enable 1
+            -data 0
+            -radialPosition "E" 
+            -allowOptionBoxes 1
+            -postMenuCommandOnce 0
+            -enableCommandRepeat 1
+            -echoCommand 0
+            -annotation "チャネル ボックスのオン/オフを切り替えます" 
+            -italicized 0
+            -boldFont 0
+            -sourceType "mel" 
+            -longDivider 1
+            menuItem75;
+
+        menuItem
+            -label "レイヤ エディタ" 
+            -divider 0
+            -subMenu 0
+            -tearOff 0
+            -command "if (`optionVar -q channelsLayersSeparate`) {\r\n\ttoggleUIComponentVisibility \"Layer Editor\";\r\n} else {\r\n\ttoggleUIComponentVisibility \"Channel Box / Layer Editor\";\r\n}\r\n; " 
+            -altModifier 0
+            -optionModifier 0
+            -commandModifier 0
+            -ctrlModifier 0
+            -shiftModifier 0
+            -optionBox 0
+            -enable 1
+            -data 0
+            -radialPosition "S" 
+            -allowOptionBoxes 1
+            -postMenuCommandOnce 0
+            -enableCommandRepeat 1
+            -echoCommand 0
+            -annotation "レイヤ エディタのオン/オフを切り替えます" 
+            -italicized 0
+            -boldFont 0
+            -sourceType "mel" 
+            -longDivider 1
+            menuItem76;
+
+        menuItem
+            -label "アトリビュート エディタ" 
+            -divider 0
+            -subMenu 0
+            -tearOff 0
+            -command "toggleUIComponentVisibility \"Attribute Editor\" " 
+            -altModifier 0
+            -optionModifier 0
+            -commandModifier 0
+            -ctrlModifier 0
+            -shiftModifier 0
+            -optionBox 0
+            -enable 1
+            -data 0
+            -radialPosition "W" 
+            -allowOptionBoxes 1
+            -postMenuCommandOnce 0
+            -enableCommandRepeat 1
+            -echoCommand 0
+            -annotation "アトリビュート エディタのオン/オフを切り替えます" 
+            -italicized 0
+            -boldFont 0
+            -sourceType "mel" 
+            -longDivider 1
+            menuItem77;
+
+        menuItem
+            -label "ツール設定" 
+            -divider 0
+            -subMenu 0
+            -tearOff 0
+            -command "toggleUIComponentVisibility \"Tool Settings\" " 
+            -altModifier 0
+            -optionModifier 0
+            -commandModifier 0
+            -ctrlModifier 0
+            -shiftModifier 0
+            -optionBox 0
+            -enable 1
+            -data 0
+            -radialPosition "N" 
+            -allowOptionBoxes 1
+            -postMenuCommandOnce 0
+            -enableCommandRepeat 1
+            -echoCommand 0
+            -annotation "ツール設定のオン/オフを切り替えます" 
+            -italicized 0
+            -boldFont 0
+            -sourceType "mel" 
+            -longDivider 1
+            menuItem78;
+
+    setParent -m ..;
+
+    menuItem
+        -label "ツール ボックス" 
+        -divider 0
+        -subMenu 0
+        -tearOff 0
+        -command "toggleUIComponentVisibility \"Tool Box\"; updatePrefsMenu" 
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "SE" 
+        -allowOptionBoxes 1
+        -postMenuCommandOnce 0
+        -enableCommandRepeat 1
+        -echoCommand 0
+        -annotation "ツール ボックスのオン/オフを切り替えます" 
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem79;
+
+    menuItem
+        -label "タイム スライダ" 
+        -divider 0
+        -subMenu 0
+        -tearOff 0
+        -command "toggleUIComponentVisibility \"Time Slider\"; updatePrefsMenu" 
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "S" 
+        -allowOptionBoxes 1
+        -postMenuCommandOnce 0
+        -enableCommandRepeat 1
+        -echoCommand 0
+        -annotation "タイム スライダのオン/オフを切り替えます" 
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem80;
+
+    menuItem
+        -label "レンジ スライダ" 
+        -divider 0
+        -subMenu 0
+        -tearOff 0
+        -command "toggleUIComponentVisibility \"Range Slider\"; updatePrefsMenu" 
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "SW" 
+        -allowOptionBoxes 1
+        -postMenuCommandOnce 0
+        -enableCommandRepeat 1
+        -echoCommand 0
+        -annotation "レンジ スライダのオン/オフを切り替えます" 
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem81;
+
+    menuItem
+        -label "シェルフ" 
+        -divider 0
+        -subMenu 0
+        -tearOff 0
+        -command "toggleUIComponentVisibility \"Shelf\"; updatePrefsMenu" 
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "W" 
+        -allowOptionBoxes 1
+        -postMenuCommandOnce 0
+        -enableCommandRepeat 1
+        -echoCommand 0
+        -annotation "シェルフのオン/オフを切り替えます" 
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem82;
+
+    menuItem
+        -label "コマンド ライン" 
+        -divider 0
+        -subMenu 0
+        -tearOff 0
+        -command "toggleUIComponentVisibility \"Command Line\"; updatePrefsMenu" 
+        -altModifier 0
+        -optionModifier 0
+        -commandModifier 0
+        -ctrlModifier 0
+        -shiftModifier 0
+        -optionBox 0
+        -enable 1
+        -data 0
+        -radialPosition "NW" 
+        -allowOptionBoxes 1
+        -postMenuCommandOnce 0
+        -enableCommandRepeat 1
+        -echoCommand 0
+        -annotation "コマンド ラインのオン/オフを切り替えます" 
+        -italicized 0
+        -boldFont 0
+        -sourceType "mel" 
+        -longDivider 1
+        menuItem83;
+
+setParent -m ..;
+

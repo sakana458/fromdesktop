@@ -1,0 +1,32 @@
+
+#-*- coding: utf-8 -*-
+"""
+このコマンドは、Ctrl + Aですべて選択し、MayaのScript EditorのPythonタブに、コピー&ペーストして実行してください。
+"""
+
+from maya import cmds
+import maya.mel as mm
+
+"""
+キャラクタのフォルダを指定し、geo.mb,rig.mbをインポートします。
+"""
+#フォルダを指定します。
+mm.eval('string $charDir = "T:/cgi/development/model/chara/HRME_N/HRME_N_D_Idling2";')
+###下記コマンドは変更しないでください。
+mm.eval('file -import -type "mayaBinary"  -ignoreVersion -mergeNamespacesOnClash false -rpr "ctrls" -options "v=1;"  -pr ($charDir + "/deform/rig.mb");')
+mm.eval('file -import -type "mayaBinary"  -ignoreVersion -mergeNamespacesOnClash false -rpr "ctrls" -options "v=1;"  -pr ($charDir + "/geo/geo.mb");')
+
+"""
+Meshグループ(geo.mb)とBone,Effecterグループ(rig.mb)を統合します。
+"""
+
+#ポーズ番号を入力します。IdlingAであれば1,Moveであれば3などです。
+posenum = 6
+#キャラクターコードを入力します。ノーマルバージョンであれば、chr10005_001_0,覚醒バージョンであれば、chr10005_001_1で最後に0か1がつきます。
+charCode = 'chr10023_001_1'
+
+###下記コマンドは変更しないでください。
+charGroup = cmds.group(em=True,n='%s_%d'%(charCode,posenum))
+cmds.parent('%s_%d_Bone'%(charCode,posenum),charGroup)
+cmds.parent('%s_%d_Effecter'%(charCode,posenum),charGroup)
+cmds.parent('%s_%d_Mesh'%(charCode,posenum),charGroup)

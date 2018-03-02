@@ -1,0 +1,13 @@
+//Maya Preference 2015 (Release 1)
+//
+//
+
+hotkey -keyShortcut "J" -alt -name ("ExtractFaceNameCommand");
+hotkey -keyShortcut "b" -ctl -name ("BridgeEdgeNameCommand");
+hotkey -keyShortcut "t" -ctl -name ("TransformPolygonComponentNameCommand");
+hotkey -keyShortcut "e" -ctl -name ("SlideEdgeToolNameCommand");
+hotkey -keyShortcut "f" -ctl -name ("ConnectComponentsNameCommand");
+hotkey -keyShortcut "x" -ctl -name ("DeleteNameCommand");
+hotkey -keyShortcut "F" -ctl -name ("FillHoleNameCommand");
+hotkey -keyShortcut "j" -ctl -name ("CombinePolygonsNameCommand");
+hotkey -keyShortcut "j" -alt -name ("SeparatePolygonNameCommand");

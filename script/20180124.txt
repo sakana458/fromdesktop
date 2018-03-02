@@ -1,0 +1,36 @@
+performAlignObjectsCallback OptionBoxWindow|formLayout96|tabLayout4|formLayout98|columnLayout51 1;
+align -atl -x Mid -y Mid -z Mid;
+
+
+位置合わせ適応
+ModObjectsMenu MayaWindow|mainModifyMenu;
+performAlignObjects 0;
+align -atl -x Mid -y Mid -z Mid;
+位置合わせオプション起動
+ModObjectsMenu MayaWindow|mainModifyMenu;
+performAlignObjects 1;
+
+選択したオブジェクトのフリーズ
+TemplateObject;
+toggle -state on -template;
+選択したオブジェクトのフリーズ解除
+UntemplateObject;
+toggle -state off -template;
+
+if(条件式)
+{
+	MEL 文 1;
+}
+else
+{
+	MEL 文 2;
+}
+
+例
+if ($x > 10) {
+	print("It's greater than 10!\n");
+	print("Run!!!\n");
+} else {
+	print("It's not above 10.\n");
+	print("It's safe... for now.\n");
+}

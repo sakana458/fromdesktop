@@ -1,0 +1,50 @@
+{	
+	if ( (`window -ex AriToolWindow`) == true ) deleteUI AriToolWindow;
+	window -title "Riging_Tool"  AriToolWindow;
+	
+	scrollLayout;
+	
+	columnLayout;
+		
+	button -l "スムーズスキン" -c "SmoothBindSkinOptions";
+	button -l "スキンのデタッチ" -c "SmoothBindSkinOptions";
+	button -l "バインドポーズに設定" -c "dagPose - bp -save";
+	button -l "バインドポーズに移動" -c "gotobindPose";
+	
+	separator ;//ただの分割線
+	
+	button -l "ロケーターの作成" -c "CreateLocator";
+	button -l "ジョイントの作成" -c "JointTool"; 
+	button -l "IKハンドルの作成" -c "IKHandleToolOpotions";
+	button -l "HumanIK" -c "HIKCharacterControlsTool"
+	
+	separator ;//ただの分割線
+	
+	button -l "コンポーネントエディタ" -c "ComponentEditor";
+	button -l "中心ピボット" -c "CenterPivot";
+	button -l "トランスフォームのフリーズ" -c "FreezeTransformations";
+	button -l "" -c "";
+	
+	separator ;//ただの分割線
+
+	button -l "" -c "";
+	button -l "" -c "";
+
+	separator ;//ただの分割線
+	
+	//ここから下はダミー
+	
+	button -l "" -c "";
+	button -l "" -c "";
+	
+	separator ;//ただの分割線
+	
+	button -l "" -c "";
+	button -l "" -c "";
+	
+	setParent..;
+	setParent..;
+	
+	showWindow;
+	
+};

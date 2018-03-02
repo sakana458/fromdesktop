@@ -1,0 +1,46 @@
+//Maya Preference 2017 (Release 1)
+//
+//
+
+//
+// The hotkey set
+//
+hotkeySet -source "Maya_Default" -current CraftsTab;
+//
+// The hotkey contexts and hotkeys
+//
+hotkey -keyShortcut "x" -ctl -name ("DeleteNameCommand");
+hotkey -keyShortcut "k" -ctl -name ("templateNameCommand");
+hotkey -keyShortcut "a" -ctl -name ("ShowAttributeEditorOrChannelBoxNameCommand");
+hotkey -keyShortcut "b" -ctl -name ("dR_bridgeToolNameCommand");
+hotkey -keyShortcut "u" -ctl -name ("");
+hotkey -keyShortcut "w" -ctl -name ("AlignmentNameCommand");
+hotkey -keyShortcut "j" -alt -name ("SeparatePolygonNameCommand");
+hotkey -keyShortcut "q" -ctl -alt -name ("");
+hotkey -keyShortcut "w" -ctl -sht -name ("AlignmentOptionNameCommand");
+hotkey -keyShortcut "f" -ctl -sht -name ("FillHoleNameCommand");
+hotkey -keyShortcut "j" -ctl -name ("CombinePolygonsNameCommand");
+hotkey -keyShortcut "k" -ctl -sht -name ("UntemplateNameCommand");
+hotkey -keyShortcut "l" -ctl -name ("dR_symmetryTGLNameCommand");
+hotkey -keyShortcut "e" -ctl -name ("dR_slideEdgeNameCommand");
+hotkey -keyShortcut "j" -alt -sht -name ("ExtractFaceNameCommand");
+hotkey -keyShortcut "f" -ctl -name ("ConnectComponentsNameCommand");
+hotkey -keyShortcut "e" -ctl -sht -name ("dR_slideOffNameCommand");
+hotkey -keyShortcut "w" -ctl -alt -name ("");
+hotkey -keyShortcut "e" -ctl -alt -name ("dR_extrudeToolNameCommand");
+hotkeyCtx -type "Editor" -addClient "hyperShadePanel";
+hotkeyCtx -type "Editor" -addClient "graphEditor";
+hotkeyCtx -type "Editor" -addClient "posePanel";
+hotkeyCtx -type "Editor" -addClient "nodeEditorPanel";
+hotkeyCtx -type "Editor" -addClient "timeEditorPanel";
+hotkeyCtx -type "Editor" -addClient "cteEditor";
+hotkeyCtx -type "Editor" -addClient "outlinerPanel";
+hotkeyCtx -type "Editor" -addClient "hyperGraphPanel";
+hotkeyCtx -type "Editor" -addClient "shapePanel";
+hotkeyCtx -type "Editor" -addClient "profilerPanel";
+hotkeyCtx -type "Editor" -addClient "polyTexturePlacementPanel";
+hotkeyCtx -type "Tool" -addClient "Unfold3DBrush";
+hotkeyCtx -type "Tool" -addClient "texSculptCacheContext";
+hotkeyCtx -type "Tool" -addClient "sculptMeshCache";
+hotkeyCtx -type "Tool" -addClient "SymmetrizeUVBrush";
+hotkeyCtx -type "Tool" -addClient "texCutContext";

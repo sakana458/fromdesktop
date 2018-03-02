@@ -1,0 +1,925 @@
+global proc shelf_MotionGraphics () {
+    global string $gBuffStr;
+    global string $gBuffStr0;
+    global string $gBuffStr1;
+
+
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "MASH ネットワークを作成: MASH ネットワークを作成" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "MASH ネットワークを作成" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "MASH_CreateNetwork.png" 
+        -image1 "MASH_CreateNetwork.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "MASHnewNetwork(\"MASH#\");" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "MASH をタイプに接続: MASH をタイプに接続" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "MASH をタイプに接続" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "MASH_ConnectToType.png" 
+        -image1 "MASH_ConnectToType.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "MASHconnectToType" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+        -mi "ポイントからメッシュを作成" ( "MASHcreateMeshFromPointsEntry" )
+        -mi "MASH ポイント ノードを作成" ( "MASHaddPointsNode" )
+        -mi "nParticle を MASH に接続" ( "MASHnNetworkConnect" )
+        -mi "パーティクルに軌跡を追加" ( "MASHaddTrailsToParticles" )
+        -mi "MASH ジオメトリ タイプを切り替え" ( "MASHswitchGeometryType" )
+        -mi "インスタンサ ピボットを作成" ( "createInstancerPivot" )
+        -mi "インスタンサをオブジェクトにベイク処理" ( "MASHBakeGUI" )
+        -mi "断面ユーティリティ" ( "MASHsetUpBreakoutUI" )
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "MASH デフォーマを作成: MASH デフォーマを作成" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "MASH デフォーマを作成" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "MASH_CreateDeformer.png" 
+        -image1 "MASH_CreateDeformer.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "MASHaddDeformer" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+        -mi "ブレンド デフォーマを作成" ( "MASHaddBlendDeformer" )
+        -mi "ジグル デフォーマを作成" ( "MASHaddJiggleDeformer" )
+    ;
+    separator
+        -enable 1
+        -width 34
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Polygon Sphere: グリッドにポリゴン球を作成します" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Polygon Sphere" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polySphere.png" 
+        -image1 "polySphere.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CreatePolygonSphere" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreatePolygonSphereOptions" 
+        -commandRepeatable 1
+        -flat 1
+        -mi "Create Cube" ( "CreatePolygonCube" )
+        -mi "Create Cylinder" ( "CreatePolygonCylinder" )
+        -mi "Create Cone" ( "CreatePolygonCone" )
+        -mi "Create Plane" ( "CreatePolygonPlane" )
+        -mi "Create Torus" ( "CreatePolygonTorus" )
+        -mi "Create Prism" ( "CreatePolygonPrism" )
+        -mi "Create Pyramid" ( "CreatePolygonPyramid" )
+        -mi "Create Pipe" ( "CreatePolygonPipe" )
+        -mi "Create Helix" ( "CreatePolygonHelix" )
+        -mi "Create Soccer Ball" ( "CreatePolygonSoccerBall" )
+        -mi "Create Platonic Solid" ( "performPolyPrimitive PlatonicSolid 0" )
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Polygon Type: グリッドにポリゴン文字を作成します" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Polygon Type" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyType.png" 
+        -image1 "polyType.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CreatePolygonType()" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "SVG: スケーラブル ベクトル グラフィックスを使用してクリップボードまたは読み込まれた SVG ファイルからポリゴンを作成" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "SVG" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polySVG.png" 
+        -image1 "polySVG.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CreatePolygonSVG()" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Bevel: 選択したエッジまたはフェースに沿ってベベルを作成します" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Bevel" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyBevel.png" 
+        -image1 "polyBevel.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "BevelPolygon" 
+        -sourceType "mel" 
+        -doubleClickCommand "BevelPolygonOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Bridge: 2 セットのエッジまたはフェース間にブリッジを作成します " 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Bridge" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyBridge.png" 
+        -image1 "polyBridge.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "BridgeEdge" 
+        -sourceType "mel" 
+        -doubleClickCommand "BridgeEdgeOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Extrude: 選択したコンポーネントを押し出します" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Extrude" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polyExtrudeFacet.png" 
+        -image1 "polyExtrudeFacet.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "PolyExtrude" 
+        -sourceType "mel" 
+        -doubleClickCommand "PolyExtrudeOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Add Divisions: 選択したエッジまたはフェースを細分割します" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Add Divisions" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "polySubdFacet.png" 
+        -image1 "polySubdFacet.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "SubdividePolygon" 
+        -sourceType "mel" 
+        -doubleClickCommand "SubdividePolygonOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "EP Curve Tool: エディット ポイントを指定してグリッド/ライブ サーフェスにカーブを作成します" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "EP Curve Tool" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "curveEP.png" 
+        -image1 "curveEP.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "EPCurveTool" 
+        -sourceType "mel" 
+        -doubleClickCommand "EPCurveToolOptions" 
+        -commandRepeatable 1
+        -flat 1
+        -mi "Pencil Curve Tool" ( "PencilCurveTool" )
+        -mi "Bezier Curve Tool" ( "CreateBezierCurveTool" )
+        -mi "CV Curve Tool" ( "CVCurveTool" )
+        -mi "Three Point Circular Arc" ( "ThreePointArcTool" )
+        -mi "Two Point Circular Arc" ( "TwoPointArcTool" )
+        -mi "Create Circle" ( "CreateNURBSCircle" )
+        -mi "Create Square" ( "CreateNURBSSquare" )
+    ;
+    separator
+        -enable 1
+        -width 34
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Bend: 選択したオブジェクトをベンドします" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Bend" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "bendNLD.png" 
+        -image1 "bendNLD.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "Bend" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+        -mi "Flare" ( "Flare" )
+        -mi "Sine" ( "Sine" )
+        -mi "Squash" ( "Squash" )
+        -mi "Twist" ( "Twist" )
+        -mi "Wave" ( "Wave" )
+        -mi "Jiggle Deformer" ( "CreateJiggleDeformer" )
+        -mi "Wrap" ( "CreateWrap" )
+        -mi "Shrink Wrap" ( "CreateShrinkWrap" )
+        -mi "Wrinkle" ( "WrinkleTool" )
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Texture Deformer: テクスチャ デフォーマへのオブジェクトの選択" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Texture Deformer" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "paintTextureDeformer.png" 
+        -image1 "paintTextureDeformer.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CreateTextureDeformer" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreateTextureDeformerOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Blend Shapes: 2 つ以上のオブジェクトを選択し、最後にベース シェイプを選択してブレンドします" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Blend Shapes" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "blendShape.png" 
+        -image1 "blendShape.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CreateBlendShape" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreateBlendShapeOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Curve Warp: Deform along a path. Select first the object to deform and then a NURBS curve as the path." 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Curve Warp" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "CurveWarp.png" 
+        -image1 "CurveWarp.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "createCurveWarp" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    separator
+        -enable 1
+        -width 34
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Camera: グリッドにカメラを作成します" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Camera" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "view.png" 
+        -image1 "view.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CreateCameraOnly" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreateCameraOnlyOptions" 
+        -commandRepeatable 1
+        -flat 1
+        -mi "Camera and Aim" ( "CreateCameraAim" )
+        -mi "Camera, Aim and Up " ( "CreateCameraAimUp" )
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Ambient Light: グリッド/ライブ サーフェスにアンビエント ライトを作成します" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Ambient Light" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "ambientlight.png" 
+        -image1 "ambientlight.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CreateAmbientLight" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreateAmbientLightOptions" 
+        -commandRepeatable 1
+        -flat 1
+        -mi "Directional Light" ( "CreateDirectionalLight" )
+        -mi "Point Light" ( "CreatePointLight" )
+        -mi "Spot Light" ( "CreateSpotLight" )
+        -mi "Area Light" ( "CreateAreaLight" )
+        -mi "Volume Light " ( "CreateVolumeLight" )
+    ;
+    separator
+        -enable 1
+        -width 34
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "3D Container: 3D 流体コンテナを作成します" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "3D Container" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "fluidCreate3D.png" 
+        -image1 "fluidCreate3D.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "Create3DContainer" 
+        -sourceType "mel" 
+        -doubleClickCommand "Create3DContainerEmitterOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Emitter: グリッドまたはライブ オブジェクト上に nParticle エミッタを作成します" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Emitter" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "posEmitter.png" 
+        -image1 "posEmitter.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "NCreateEmitter" 
+        -sourceType "mel" 
+        -doubleClickCommand "NCreateEmitterOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Emit from Object: nParticle を放出するオブジェクトを選択してください" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Emit from Object" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "emitter.png" 
+        -image1 "emitter.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "NEmitFromObject" 
+        -sourceType "mel" 
+        -doubleClickCommand "NEmitFromObjectOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "nParticle Tool: グリッドまたはライブ オブジェクト上に nParticle を作成します" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "nParticle Tool" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "particle.png" 
+        -image1 "particle.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "NParticleTool" 
+        -sourceType "mel" 
+        -doubleClickCommand "NParticleToolOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Radial: 放射状フィールドを作成します。フィールドが作用するオブジェクトを選択してください" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Radial" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "posRadial.png" 
+        -image1 "posRadial.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "Radial" 
+        -sourceType "mel" 
+        -doubleClickCommand "RadialOptions" 
+        -commandRepeatable 1
+        -flat 1
+        -mi "Drag" ( "Drag" )
+        -mi "Turbulence" ( "Turbulence" )
+        -mi "Gravity" ( "Gravity" )
+        -mi "Newton" ( "Newton" )
+        -mi "Uniform" ( "Uniform" )
+        -mi "Vortex" ( "Vortex" )
+        -mi "Air" ( "Air" )
+        -mi "Springs" ( "CreateSpring" )
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Fill Object: nParticles で埋め尽くすメッシュを選択します" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Fill Object" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "nPartfillObject.png" 
+        -image1 "nPartfillObject.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "ParticleFill" 
+        -sourceType "mel" 
+        -doubleClickCommand "ParticleFillOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Soft Body: ジオメトリ オブジェクトを選択してから、ソフト ボディを作成します" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Soft Body" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "soft.png" 
+        -image1 "soft.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "CreateNSoftBody" 
+        -sourceType "mel" 
+        -doubleClickCommand "CreateNSoftBodyOptions" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    separator
+        -enable 1
+        -width 34
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Set Key: オブジェクトを選択してキーを設定します" 
+        -enableBackground 0
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Set Key" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "setKeyframe.png" 
+        -image1 "setKeyframe.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "SetKey" 
+        -sourceType "mel" 
+        -commandRepeatable 1
+        -flat 1
+        -mi "Set Key on Animated" ( "SetKeyAnimated" )
+        -mi "Set Key on Translate" ( "SetKeyTranslate" )
+        -mi "Set Key on Rotate" ( "SetKeyRotate" )
+        -mi "Set Key on Scale" ( "SetKeyScale" )
+        -mi "Constrain Parent" ( "ParentConstraint" )
+        -mi "Constrain Point" ( "PointConstraint" )
+        -mi "Constrain Orient" ( "performOrientConstraint 0" )
+        -mi "Constrain Scale" ( "ScaleConstraint" )
+        -mi "Constrain Aim" ( "AimConstraint" )
+        -mi "Constrain Pole Vector" ( "PoleVectorConstraint" )
+        -mi "Constrain Point on Poly" ( "PointOnPolyConstraint" )
+        -mi "Constrain Geometry" ( "GeometryConstraint" )
+        -mi "Constrain Normal" ( "performNormalConstraint 0" )
+    ;
+
+} 
