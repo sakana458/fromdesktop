@@ -1,16 +1,29 @@
+//--------------------------------------------------------------------------
+//
+// ScriptName : userSetup
+// Contents   : CraftsTabなどの便利機能をMaya起動時に自動展開します
+// Since      : 2018/2
+// LastUpdate : 2016/03/02 カスタムシェルフ内のMel追加
+//
+//--------------------------------------------------------------------------
+
+//CraftsTabウィンドウを追加する
+
 global string $gMainWindow;
     setParent $gMainWindow;
     menu
     -label "CraftsTab"
     -parent $gMainWindow
     -tearOff on;
-    menuItem
-      -label "Mirror"
-      -command "AriMirror"
-      -echoCommand true;
+
     menuItem
       -label "Renamer"
       -command "AriRenamer"
+      -echoCommand true;
+
+    menuItem
+      -label "Mirror"
+      -command "AriMirror"
       -echoCommand true;
 
     menuItem
@@ -37,3 +50,70 @@ global string $gMainWindow;
       -label "StraightVertexs"
       -command "AriStraightVertexs"
       -echoCommand true;
+
+    menuItem
+      -label "SetPivot"
+      -command "AriSetPivot"
+      -echoCommand true;
+      
+    menuItem
+      -label "UVRatio"
+      -command "AriUVRatio"
+      -echoCommand true;
+      
+    menuItem
+      -label "UVScaleChecker"
+      -command "AriUVScaleChecker"
+      -echoCommand true;
+      
+    menuItem
+      -label "ViewWindow"
+      -command "AriViewWindow"
+      -echoCommand true;
+      
+    menuItem
+      -label "TextureSize"
+      -command "TextureSize"
+      -echoCommand true;
+      
+    menuItem
+      -label "FileTextureManager"
+      -command "FileTextureManager"
+      -echoCommand true;
+
+    //CraftsTabショートカットキーを自動で登録します
+    
+    if ( (`hotkeySet -ex CraftsTabKeySet`) == true ) hotkeySet -e -delete CraftsTabKeySet;
+	hotkeySet -e -import "Z:/@ Crafts/library/mayaScripts/prefs/hotkeys/CraftsTabKeySet.mhk";
+	hotkeySet -e -current CraftsTabKeySet;
+       
+    //自動でシェルフに登録するmel  
+    
+    shelfButton -rpt true -i1 "menuIconFile.png" -l "OptimizeScene" -ann "シーンサイズの最適化" -p "Custom" -c"OptimizeScene" -dcc "OptimizeSceneOptions;" -iol "最適化";
+    shelfButton -rpt true -i1 "menuIconModify.png" -l "CenterPivot" -ann "ピポットを中心に移動" -p "Custom" -c"CenterPivot" -iol "中心ピポ";
+    shelfButton -rpt true -i1 "menuIconModify.png" -l "FreezeTransformations" -ann "トランスフォームのフリーズ" -p "Custom" -c"FreezeTransformations" -iol "トランス";
+    shelfButton -rpt true -i1 "menuIconEdit.png" -l "DeleteHistory" -ann "ワンクリックで対象のヒストリの削除　ダブルクリックで全てのヒストリの削除" -p "Custom" -c"DeleteHistory" -dcc "BakeAllNonDefHistory" -iol "Delヒス";    
+    shelfButton -rpt true -i1 "commandButton.png" -l "dagPose - bp -save" -ann "現在のポーズをバインドポーズに設定" -p "Custom" -c"dagPose - bp -save" -iol "Bpose";
+    shelfButton -rpt true -i1 "commandButton.png" -l "gotoBindPose" -ann "バインドポーズに移動" -p "Custom" -c"gotoBindPose" -iol "GoBp";        
+    shelfButton -rpt true -i1 "AriIconViewer.png" -l "AriIconViewer" -ann "AriIconViewer" -p "Custom" -c"AriIconViewer" -iol "IconV";
+    shelfButton -rpt true -i1 "AriMirror.png" -l "AriMirror" -ann "AriMirror" -p "Custom" -c"AriMirror" -iol "Mirror";
+    shelfButton -rpt true -i1 "AriPolygonCounter.png" -l "AriPolygonCounter" -ann "AriPolygonCounter" -p "Custom" -c"AriPolygonCounter" -iol "PoCou";
+    shelfButton -rpt true -i1 "menuIconPolygons.png" -l "AriQuadrangulateRing" -ann "AriQuadrangulateRing" -p "Custom" -c"AriQuadrangulateRing" -iol "四角形化";
+    shelfButton -rpt true -i1 "AriRenamer.png" -l "AriRenamer" -ann "AriRenamer" -p "Custom" -c"AriRenamer" -iol "Rename";
+    shelfButton -rpt true -i1 "AriSetPivot.png" -l "AriSetPivot" -ann "AriSetPivot" -p "Custom" -c"AriSetPivot" -iol "Pivot";
+    shelfButton -rpt true -i1 "AriStraightVertex.png" -l "AriStraightVertex" -ann "AriStraightVertex" -p "Custom" -c"AriStraightVertex" -iol "頂点整列";
+    shelfButton -rpt true -i1 "AriUVGridding.png" -l "AriUVGridding" -ann "AriUVGriddingr" -p "Custom" -c"AriUVGriddingr" -dcc"AriUVGriddingOptions" -iol "Uv格子状";
+    shelfButton -rpt true -i1 "commandButton.png" -l "AriUVGriddingOptions" -ann "AriUVGriddingOptions" -p "Custom" -c"AriUVGriddingOptions" -iol "UvgOp";
+    shelfButton -rpt true -i1 "AriUVRatio.png" -l "AriUVRatio" -ann "AriUVRatio" -p "Custom" -c"AriUVRatio" -dcc"AriUVRatioOptions" -iol "UvRat";
+    shelfButton -rpt true -i1 "commandButton.png" -l "AriUVRatioOptions" -ann "AriUVRatioOptions" -p "Custom" -c"AriUVRatioOptions" -iol "UvROp";
+    shelfButton -rpt true -i1 "AriUVScaleChecker.png" -l "AriUVScaleChecker" -ann "AriUVScaleChecker" -p "Custom" -c"AriUVScaleChecker" -iol "UvSca";
+    shelfButton -rpt true -i1 "commandButton.png" -l "AriViewWindow" -ann "AriViewWindow" -p "Custom" -c"AriViewWindow" -iol "View";
+    shelfButton -rpt true -i1 "file.png" -l "FileTextureManager" -ann "FileTextureManager" -p "Custom" -c"FileTextureManager" -iol "TexMn";
+    shelfButton -rpt true -i1 "render_place2dTexture.png" -l "TextureSize" -ann "TextureSize" -p "Custom" -c "TextureSize" -iol "TexSi";
+    shelfButton -rpt true -i1 "AriSymmetryChecker.png" -l "AriSymmetryChecker" -ann "AriSymmetryChecker" -p "Custom" -c"AriSymmetryChecker" -iol "Symch";
+    shelfButton -rpt true -i1 "AriCircleVertex.png" -l "AriCircleVertex" -ann "AriCircleVertexr" -p "Custom" -c"AriCircleVertex" -iol "円形化";
+   
+
+    
+    //以下ダミー コピペして仕様
+    //shelfButton -rpt true -i1 ".png" -l "" -ann "" -p "Custom" -c"" -iol "";
