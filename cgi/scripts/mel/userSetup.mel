@@ -84,7 +84,7 @@ global string $gMainWindow;
     //CraftsTabショートカットキーを自動で登録します
     
     if ( (`hotkeySet -ex CraftsTabKeySet`) == true ) hotkeySet -e -delete CraftsTabKeySet;
-	hotkeySet -e -import "Z:/@ Crafts/library/mayaScripts/prefs/hotkeys/CraftsTabKeySet.mhk";
+	hotkeySet -e -import "D:\user\新しいフォルダー\maya\2017\ja_JP\prefs\hotkeys\CraftsTabKeySet.mhk";
 	hotkeySet -e -current CraftsTabKeySet;
        
     //自動でシェルフに登録するmel  
@@ -113,6 +113,8 @@ global string $gMainWindow;
     shelfButton -rpt true -i1 "AriSymmetryChecker.png" -l "AriSymmetryChecker" -ann "AriSymmetryChecker" -p "Custom" -c"AriSymmetryChecker" -iol "Symch";
     shelfButton -rpt true -i1 "AriCircleVertex.png" -l "AriCircleVertex" -ann "AriCircleVertexr" -p "Custom" -c"AriCircleVertex" -iol "円形化";
    
+   
+
 
     
     //以下ダミー コピペして仕様

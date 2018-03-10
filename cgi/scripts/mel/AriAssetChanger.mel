@@ -1,0 +1,428 @@
+//--------------------------------------------------------------------------
+//
+// ScriptName : AriAssetChanger
+// Contents   : アセット(オブジェクト)の置き換え作業を簡単にします。
+// Author     : Ari(CG自習部屋)
+// URL        : http://cgjishu.net/
+// Since      : 2016/07
+// LastUpdate : 2017/02/26 ランダム機能追加しました。
+//                         頂点配置時、向きを設定できるようにしました。
+//
+//--------------------------------------------------------------------------
+
+
+
+proc vector RotPosition(vector $pos,float $rot,int $mode){
+	
+	vector $rotPos;
+	float $rotRad = deg_to_rad($rot);
+	
+	if($mode==0) $rotPos = << $pos.x                                    , $pos.y*cos($rotRad) - $pos.z*sin($rotRad) , $pos.y*sin($rotRad) + $pos.z*cos($rotRad)>>;
+	if($mode==1) $rotPos = << $pos.z*sin($rotRad) + $pos.x*cos($rotRad) , $pos.y                                    , $pos.z*cos($rotRad) - $pos.x*sin($rotRad)>>;
+	if($mode==2) $rotPos = << $pos.x*cos($rotRad) - $pos.y*sin($rotRad) , $pos.x*sin($rotRad) + $pos.y*cos($rotRad) , $pos.z  >>;
+	
+	return $rotPos;
+}
+
+proc int AriAssetChanger_ListNum (string $obj){
+	int $num;
+	string $parent[]=`listRelatives -p -pa $obj`;
+	string $children[];
+	if($parent[0]=="")	$children=`ls -as `;
+	else $children=	`listRelatives -c -pa $parent[0]`;
+	int $i=0;
+	for($child in $children){
+		if($child == $obj){
+			$num=$i;
+			break;
+		}
+		$i++;
+	}
+	return $num;
+}
+proc AriObjectAniCopy(string $target0bj,string $baseObj){
+	string $desti_conneList[]=`listConnections -c 1 -p 1 -d 1 -s 0 $target0bj`;
+	string $sorce_conneList[]=`listConnections -c 1 -p 1 -d 0 -s 1 $target0bj`;
+	for($j=0;$j<(size($desti_conneList)/2);$j++){
+		string $base=$desti_conneList[$j*2];
+		string $target=$desti_conneList[$j*2+1];
+		string $baseAttr=endString($base,size($base)-size($target0bj));
+		string $newBase=$baseObj+$baseAttr;
+		string $sepa[];
+		tokenize $target "." $sepa;
+		string $targetNode = $sepa[0];
+		string $newBaseConeNode[] = `listConnections $newBase`;
+		if($newBaseConeNode[0] != $targetNode)connectAttr -f $newBase $target;
+	}
+	for($j=0;$j<(size($sorce_conneList)/2);$j++){
+		string $base=$sorce_conneList[$j*2];
+		string $target=$sorce_conneList[$j*2+1];
+		string $baseAttr=endString($base,size($base)-size($target0bj));
+		string $newBase=$baseObj+$baseAttr;
+		string $sepa[];
+		tokenize $target "." $sepa;
+		string $targetNode = $sepa[0];
+		string $newBaseConeNode[] = `listConnections $newBase`;
+		if($newBaseConeNode[0] != $targetNode)	connectAttr -f $target $newBase;
+	}
+}
+global proc AriAssetChanger_ListGet(){
+	global string $AriAssetChangerTextField;
+	global string $AriAssetChangerList;
+	string $selObj[]=`ls -sl -tr`;
+	string $groupName = $selObj[0];
+	textField -e -text $groupName $AriAssetChangerTextField;
+	AriAssetChanger_ReLoad();
+	optionVar -stringValue  "AriAssetChanger_get" $groupName;
+}
+global proc AriAssetChanger_ListGroupSel(){
+	global string $AriAssetChangerTextField;
+	global string $AriAssetChangerList;
+	string $text=`textField -q -text $AriAssetChangerTextField`;
+	if($text=="")return;
+	select $text;
+	textField -e -text "" $AriAssetChangerTextField;
+	textScrollList -e -ra $AriAssetChangerList;
+}
+global proc AriAssetChanger_ListNextSel(int $mode){
+	string $selObj[]=`ls -sl -tr`;
+	AriAssetChanger_ListGroupSel();
+	if($mode==0)pickWalk -d right;
+	if($mode==1)pickWalk -d left;
+	AriAssetChanger_ListGet();
+	select $selObj;
+}
+global proc AriAssetChanger_ListJump(){
+	global string $AriAssetChangerList;
+	string $selObj[]=`ls -sl -tr`;
+	if(size($selObj)==0)return;
+	string $obj=$selObj[size($selObj)-1];
+	$obj=AriAssetChanger_baseName($obj);
+	string $allList[]=`textScrollList -q -ai $AriAssetChangerList`;
+	int $i=0;
+	string $allBaseList[];
+	for($listOne in $allList){
+		$allBaseList[$i]=AriAssetChanger_baseName($listOne);
+		$i++;
+	}
+	int $numTotal = 0;
+	$numTotal = size($obj);
+	string $muchObj;
+	int $muchId;
+	for($i=$numTotal;$i>0;$i--){
+		int $j=0;
+		for($listOne in $allBaseList){
+			if(startString($listOne,$i) == startString($obj,$i)){
+				$muchObj=$listOne;
+				$muchId=$j;
+				break;
+			}
+			$j++;
+		}
+		if($muchObj!="")break;
+	}
+	textScrollList -e -da $AriAssetChangerList;
+	textScrollList -e -sii ($muchId+1) $AriAssetChangerList;
+}
+proc string AriObjectChange(string $changeObj, string $target, int $instance, int $rename, int $childsave, int $connect){
+	float $pos[3]   =`xform  -q -ws -rp $target`;
+	float $rot[3]   =`getAttr ($target+".rotate")`;
+	float $scale[3] =`getAttr ($target+".scale")`; 
+	string $parent[]=`listRelatives -p -pa $target`;
+	int $targetNum  = AriAssetChanger_ListNum($target);
+	string $dupObj[];
+	if($instance)	$dupObj=`duplicate -rr -instanceLeaf $changeObj`;	
+	else			$dupObj=`duplicate -rr $changeObj`;					
+	string $children[];
+	if($childsave==true){
+		$children =`listRelatives -c -pa -type "transform" $target`;
+		if(size($children)>0) $children=`parent -world $children`;	
+	}	
+	if($parent[0] != "")	$dupObj=`parent $dupObj[0] $parent[0]`;	
+	else 					$dupObj=`parent -world $dupObj[0]`;		
+	reorder -relative ($targetNum+1) $dupObj[0];
+	move -rpr ($pos[0]) ($pos[1]) ($pos[2]) $dupObj[0];
+	setAttr ($dupObj[0]+".rotate") ($rot[0])   ($rot[1])   ($rot[2]);
+	setAttr ($dupObj[0]+".scale")  ($scale[0]) ($scale[1]) ($scale[2]);
+	if($childsave==true){
+		if(size($children)>0)parent $children $dupObj[0];
+	}
+	if($connect){
+		AriObjectAniCopy($target,$dupObj[0]);
+	}
+	delete $target;
+	if($rename==true){
+		string $sepa[];
+		tokenize $target "|" $sepa;
+		$dupObj[0] = `rename $dupObj[0] $sepa[size($sepa)-1]`;
+	}
+	return $dupObj[0];
+}
+global proc AriAssetChanger_selectGo(){
+	AriAssetChanger_go(0);
+}
+global proc AriAssetChanger_go(int $mode){
+	global string $AriAssetChangerList;
+	global string $AriAssetChangerTextField;
+	global string $AriAssetChangerCheckBox[6];
+	global string $AriAssetChangerRadio[6];
+	int $instance  = `checkBox -q -v $AriAssetChangerCheckBox[0]`;
+	int $rename    = `checkBox -q -v $AriAssetChangerCheckBox[1]`;
+	int $childsave = `checkBox -q -v $AriAssetChangerCheckBox[2]`;
+	int $connect   = `checkBox -q -v $AriAssetChangerCheckBox[3]`;
+	int $verCenter = false;
+	string $parentName = `textField -q -text $AriAssetChangerTextField`;
+	string $selObj[] = `ls -sl -tr`;
+	string $selAll[] = `ls -sl`;
+	string $vers[] = `filterExpand -selectionMask 31 $selAll`;
+	string $changeObjList[];
+	string $changeObj[]=`textScrollList -q -si $AriAssetChangerList`;
+	int $listSize = size($changeObj);	
+	if ($listSize>=2 && $mode==0)return;
+	if ($listSize==0 && $mode==0)return;
+	int $i=0;
+	if(size($selObj) != 0 ){
+		for($target in $selObj){
+			string $parents[]=`listRelatives -p -pa $target`;
+			if($parentName != $parents[0]){
+				if ($listSize<=1 && $mode==1){	
+					textScrollList -e -da $AriAssetChangerList;
+					$changeObj = `textScrollList -q -ai $AriAssetChangerList`;
+					$listSize  = size($changeObj);
+				}
+				int $selectsNumber = int(rand ($listSize));
+				string $dupObj = AriObjectChange($changeObj[$selectsNumber], $target, $instance, $rename, $childsave, $connect);
+				$changeObjList[$i] = $dupObj;
+				$i++;
+			}
+			else{
+				print("自身の階層内のためスキップ\n");
+			}
+		}
+	}
+	string $makeObjList[];
+	int $j=0;
+	if(size($vers) != 0){
+		int $directionTrue = true;
+		$directionTrue = `checkBox -q -v $AriAssetChangerRadio[4]`;
+		vector $directionXYZ = <<0,1,0>>;
+		if(`radioButton -q -sl $AriAssetChangerRadio[0]`)  $directionXYZ = <<1,0,0>>;
+		if(`radioButton -q -sl $AriAssetChangerRadio[1]`)  $directionXYZ = <<0,1,0>>;
+		if(`radioButton -q -sl $AriAssetChangerRadio[2]`)  $directionXYZ = <<0,0,1>>;
+		if(`checkBox -q -v $AriAssetChangerRadio[3]`) $directionXYZ = $directionXYZ * -1;
+		if(!$verCenter){
+			for($ver in $vers){
+				string $objects[] = `polyListComponentConversion $ver`;	
+				$objects = `listRelatives -p -pa -type "transform" $objects[0]`;
+				string $object = $objects[0];
+				float $pos[3]   =`pointPosition -w $ver`;
+				string $parent[]=`listRelatives -p -pa $object`;
+				float $nor[] = `polyNormalPerVertex -q -xyz $ver`;
+				vector $norTotal=<<0,0,0>>;
+				int $count=0;
+				for($n=0; $n<size($nor); $n=$n+3){
+					$norTotal=<<$norTotal.x+$nor[$n], $norTotal.y+$nor[$n+1], $norTotal.z+$nor[$n+2]>>;
+					$count++;
+				}
+				vector $norAve=$norTotal/$count;
+				vector $worldNormal = {$norAve.x,$norAve.y,$norAve.z};
+				string $thisObj = $object;
+				int $k=0;
+				while(1){
+					float $objRotF[] = `getAttr ($thisObj+".rotate")`;
+					$worldNormal = RotPosition($worldNormal,($objRotF[0]),0);
+					$worldNormal = RotPosition($worldNormal,($objRotF[1]),1);
+					$worldNormal = RotPosition($worldNormal,($objRotF[2]),2);
+					string $parents[]= `listRelatives -p -pa $thisObj`;
+					$thisObj = $parents[0];
+					if($thisObj=="")break;
+					$k++;
+				}
+				float $rotEul[];
+				if($directionTrue)	$rotEul = `angleBetween -euler -v1 ($directionXYZ.x) ($directionXYZ.y) ($directionXYZ.z) -v2 ($worldNormal.x) ($worldNormal.y) ($worldNormal.z)`;
+				if ($listSize<=1 && $mode==1){	
+					textScrollList -e -da $AriAssetChangerList;
+					$changeObj = `textScrollList -q -ai $AriAssetChangerList`;
+					$listSize  = size($changeObj);
+				}
+				int $selectsNumber = int(rand ($listSize));
+				string $dupObj[];
+				if($instance)	$dupObj=`duplicate -rr -instanceLeaf $changeObj[$selectsNumber]`;	
+				else			$dupObj=`duplicate -rr $changeObj[$selectsNumber]`;					
+				move -rpr ($pos[0]) ($pos[1]) ($pos[2]) $dupObj[0];
+				setAttr ($dupObj[0]+".rotate") $rotEul[0] $rotEul[1] $rotEul[2] ;
+				$dupObj=`parent -world $dupObj[0]`;		
+				$makeObjList[$i] = $dupObj[0];
+				$i++;
+			}
+		}
+		else{
+			float $posTotal[];
+			$posTotal[0]=0;
+			$posTotal[1]=1;
+			$posTotal[2]=2;
+			for($ver in $vers){
+				float $pos[3]   =`pointPosition -w $ver`;
+				$posTotal[0] += $pos[0];
+				$posTotal[1] += $pos[1];
+				$posTotal[2] += $pos[2];
+			}
+			float $pos[3];
+			$pos[0] = $posTotal[0]/(size($vers));
+			$pos[1] = $posTotal[1]/(size($vers));
+			$pos[2] = $posTotal[2]/(size($vers));
+			string $dupObj[];
+			if($instance)	$dupObj=`duplicate -rr -instanceLeaf $changeObj[0]`;	
+			else			$dupObj=`duplicate -rr $changeObj[0]`;					
+			move -rpr ($pos[0]) ($pos[1]) ($pos[2]) $dupObj[0];
+			$dupObj=`parent -world $dupObj[0]`;		
+			$makeObjList[$i] = $dupObj[0];
+		}
+		group $makeObjList;
+	}
+	select $changeObjList;
+	select -add $makeObjList;
+}
+global proc string AriAssetChanger_baseName(string $obj){
+	string $baseObj;
+	string $sepa[];
+	tokenize $obj "|" $sepa;
+	$baseObj = $sepa[size($sepa)-1];
+	return $baseObj;
+}
+global proc AriAssetChanger_ReLoad(){
+	global string $AriAssetChangerTextField;
+	global string $AriAssetChangerList;
+	textScrollList -e -ra $AriAssetChangerList;
+	$text = `textField -q -text $AriAssetChangerTextField`;
+	if($text=="")return;
+	string $children[]=`listRelatives -c -pa $text`;
+	string $evalString="textScrollList -e ";
+	for($child in $children){
+		$evalString += ("-a "+$child+" ");
+	}
+	$evalString += $AriAssetChangerList;
+	eval $evalString;
+}
+global proc AriAssetChanger_UIChange(){
+	global string $AriAssetChangerRadio[8];
+	int $enTrue = false;
+	$enTrue =`checkBox -q -v $AriAssetChangerRadio[4]`;
+	radioButton -e -en $enTrue $AriAssetChangerRadio[0];
+	radioButton -e -en $enTrue $AriAssetChangerRadio[1];
+	radioButton -e -en $enTrue $AriAssetChangerRadio[2];
+	checkBox -e -en $enTrue $AriAssetChangerRadio[3];
+	int $selectXYZ=1;
+	if(`radioButton -q -sl $AriAssetChangerRadio[0]`)$selectXYZ = 0;
+	if(`radioButton -q -sl $AriAssetChangerRadio[1]`)$selectXYZ = 1;
+	if(`radioButton -q -sl $AriAssetChangerRadio[2]`)$selectXYZ = 2;
+	if(`checkBox -q -v $AriAssetChangerRadio[3]`) $selectXYZ = $selectXYZ+3;
+	optionVar -intValue  "AriAssetChanger_direction" $enTrue;
+	optionVar -intValue  "AriAssetChanger_direXYZ"   $selectXYZ;
+	print ($selectXYZ);
+}
+global proc AriAssetChanger(){
+	global string $AriAssetChangerList;
+	global string $AriAssetChangerTextField;
+	global string $AriAssetChangerCheckBox[6];
+	global string $AriAssetChangerRadio[8];
+	string $data_get   = "";
+	int $data_frameClose = true;
+	int $data_instance = false;
+	int $data_rename   = false;
+	int $data_child    = false;
+	int $data_node     = true;
+	int $data_direction= true;
+	int $data_direXYZ  = 1;
+	if(`optionVar -exists "AriAssetChanger_get"`)      $data_get       = `optionVar -q "AriAssetChanger_get"`;
+	if(`optionVar -exists "AriAssetChanger_frameClose"`)$data_frameClose= `optionVar -q "AriAssetChanger_frameClose"`;
+	if(`optionVar -exists "AriAssetChanger_instance"`)  $data_instance  = `optionVar -q "AriAssetChanger_instance"`;
+	if(`optionVar -exists "AriAssetChanger_rename"`)    $data_rename    = `optionVar -q "AriAssetChanger_rename"`;
+	if(`optionVar -exists "AriAssetChanger_child"`)     $data_child     = `optionVar -q "AriAssetChanger_child"`;
+	if(`optionVar -exists "AriAssetChanger_node"`)      $data_node      = `optionVar -q "AriAssetChanger_node"`;
+	if(`optionVar -exists "AriAssetChanger_direction"`) $data_direction = `optionVar -q "AriAssetChanger_direction"`;
+	if(`optionVar -exists "AriAssetChanger_direXYZ"`)   $data_direXYZ   = `optionVar -q "AriAssetChanger_direXYZ"`;  
+	if( !`objExists $data_get` ) {
+		$data_get = "";
+	}
+	if((`window -ex  AriAssetChanger`)==true)deleteUI AriAssetChanger;
+	window -title "AriAssetChanger"  -w 180 -h 100 AriAssetChanger;
+	string $form = `formLayout`;
+	string $getCol=`columnLayout -adj true`;
+	string $formRow2Item[5];
+	string $formRow2 =`formLayout`;
+	string $AriAssetChangerTextField = `textField -h 24 -ed 0 -text $data_get`;
+	$formRow2Item[0] = `button -w 20  -l "<"   -c "AriAssetChanger_ListNextSel(1)"`;
+	$formRow2Item[1] = `button -w 20  -l ">"   -c "AriAssetChanger_ListNextSel(0)"`;
+	setParent..;
+	formLayout -edit
+		-af $formRow2Item[1] "right"  0
+		-ac $formRow2Item[0] "right"  0 $formRow2Item[1]
+		-af $AriAssetChangerTextField "left"  0	
+		-ac $AriAssetChangerTextField "right" 0 $formRow2Item[0]
+	$formRow2;
+	string $formRow1Item[5];
+	string $formRow1 =`formLayout`;
+	$formRow1Item[0] = `button -w 30 -l "Get"     -c "AriAssetChanger_ListGet()" -bgc 0.4 0.8 0.4`;
+	$formRow1Item[1] = `button -w 30 -l "Reload"  -c "AriAssetChanger_ReLoad()"`;
+	setParent..;
+	formLayout -edit
+		-af $formRow1Item[0] "left"  0						-ap $formRow1Item[0] "right" 0 50
+		-ac $formRow1Item[1] "left"  0 $formRow1Item[0]		-ap $formRow1Item[1] "right" 0 100
+	$formRow1;
+	showWindow;
+	setParent..;
+	$AriAssetChangerList = `textScrollList -allowMultiSelection true -sc "AriAssetChanger_selectGo()"`;
+	string $etcbuttonColum = `columnLayout -adj true `;
+	button -w 80 -l "Jump"   -c "AriAssetChanger_ListJump()";
+	button -w 80 -l "Random" -c "AriAssetChanger_go(1)";
+	frameLayout -cll true -cl $data_frameClose -l "Option" -cc ("optionVar -intValue  \"AriAssetChanger_frameClose\" 1")
+	                                           -ec ("optionVar -intValue  \"AriAssetChanger_frameClose\" 0");
+	columnLayout -adj true;
+	$AriAssetChangerCheckBox[0] = `checkBox -v $data_instance  -l "インスタンス" 
+	                                         -onc ("optionVar -intValue  \"AriAssetChanger_instance\" 1")
+	                                         -ofc ("optionVar -intValue  \"AriAssetChanger_instance\" 0")`;
+	$AriAssetChangerCheckBox[1] = `checkBox -v $data_rename    -l "リネーム" -ann "コピー先のオブジェクト名を使用"
+	                                         -onc ("optionVar -intValue  \"AriAssetChanger_rename\" 1")
+	                                         -ofc ("optionVar -intValue  \"AriAssetChanger_rename\" 0")`;
+	$AriAssetChangerCheckBox[2] = `checkBox -v $data_child     -l "子を保持"
+	                                         -onc ("optionVar -intValue  \"AriAssetChanger_child\" 1")
+	                                         -ofc ("optionVar -intValue  \"AriAssetChanger_child\" 0")`;
+	$AriAssetChangerCheckBox[3] = `checkBox -v $data_node      -l "ノード接続を保持" -ann "コピー先に接続されているノードをつなぐ"
+	                                         -onc ("optionVar -intValue  \"AriAssetChanger_node\" 1")
+	                                         -ofc ("optionVar -intValue  \"AriAssetChanger_node\" 0")`;
+	rowLayout -nc 2;
+	text -l "頂点配置向き";
+	$AriAssetChangerRadio[4] = `checkBox -l "" -v $data_direction -cc ("AriAssetChanger_UIChange()")`;
+	setParent..;
+	radioCollection;
+	rowLayout -nc 6;
+	$AriAssetChangerRadio[0] = `radioButton -w 32 -bgc 0.4 0   0   -label "X" -onc ("AriAssetChanger_UIChange()")`;
+	$AriAssetChangerRadio[1] = `radioButton -w 32 -bgc 0   0.4 0   -label "Y" -onc ("AriAssetChanger_UIChange()")`;
+	$AriAssetChangerRadio[2] = `radioButton -w 32 -bgc 0   0   0.4 -label "Z" -onc ("AriAssetChanger_UIChange()")`;
+	$AriAssetChangerRadio[3] = `checkBox -l "-" -cc ("AriAssetChanger_UIChange()")`;
+	setParent..;
+	setParent..;
+	setParent..;
+	setParent..;
+	setParent..;
+	formLayout -edit
+	-af $getCol "top"   0
+	-af $getCol "left"  0
+	-af $getCol "right" 0
+	-af $etcbuttonColum "bottom" 0
+	-af $etcbuttonColum "left"   0
+	-af $etcbuttonColum "right"  0
+	-ac $AriAssetChangerList "top"      0  $getCol
+	-ac $AriAssetChangerList "bottom"   0  $etcbuttonColum
+	-af $AriAssetChangerList "left"     0
+	-af $AriAssetChangerList "right"    0
+	$form;
+	showWindow;
+	int $selXYZ = $data_direXYZ % 3;
+	int $selmui = $data_direXYZ / 3;
+	radioButton -e -sl $AriAssetChangerRadio[$selXYZ];
+	checkBox    -e -v $selmui $AriAssetChangerRadio[3];
+	AriAssetChanger_UIChange();
+	AriAssetChanger_ReLoad();
+}

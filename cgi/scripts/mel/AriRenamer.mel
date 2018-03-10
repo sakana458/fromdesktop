@@ -4,8 +4,7 @@
 // Contents   : 複数のノードをテキストエディタ感覚でリネームします。
 // Author     : Ari
 // Since      : 2014/08
-// LastUpdate : 2017/12/06 アンダーバーで始まるノード名等ををエラーと判断したので修正
-//              2017/01/29 一括変更、連番挿入をしやすいようにUIを少し変更。
+// LastUpdate : 2017/01/29 一括変更、連番挿入をしやすいようにUIを少し変更。
 //                         アルファベット連番機能追加。
 //              2016/04/10 複数のオブジェクトが名前と一致エラーを回避
 //                         複数のfileノードが同じテクスチャを参照している場合のエラーを回避
@@ -35,15 +34,10 @@
 
 
 proc string AriRenamer_ToText(string $textList[],int $mode){
-	
 	string $exText;
-	
 	int $amount = 0;
 	int $maxText = size($textList);
-	
-	
 	for($text in $textList){
-		
 		if($mode==0)$text=AriRenamer_ShortName($text);
 		$exText=($exText+$text+"\n");
 	}
@@ -75,37 +69,6 @@ proc AriRenamer_leftFieldImput(string $list[]){
 	}
 	clear $AriRename_History;
 	clear $AriRename_ReHistory;
-}
-proc string[] AriRenamer_NumberSeparate(string $beforeName,int $mode){
-	string $afterName[];
-	int $nameSize=size($beforeName);
-	int $breakNum1=0;
-	int $breakNum2=0;
-	for($i=0;$i<$nameSize;$i++){
-		string $end=(substring($beforeName , $nameSize-$i ,$nameSize-$i));		
-		if(`gmatch $end ("[0-9]")`){
-			$breakNum1=$i+1;
-		}
-		else{
-			break;
-		}
-		if(`gmatch $end ("[1-9]")`){
-			$breakNum2=$i+1;
-		}
-	}
-	string $stringString;
-	string $stringNumber;
-	if($mode==0){
-		$stringString=startString ($beforeName,$nameSize-$breakNum1);
-	    $stringNumber=endString ($beforeName,$breakNum1);
-	}
-	if($mode==1){
-		$stringString=startString ($beforeName,$nameSize-$breakNum2);
-	    $stringNumber=endString ($beforeName,$breakNum2);
-	}
-	$afterName[0]=$stringString;
-	$afterName[1]= $stringNumber;
-	return $afterName;
 }
 proc int AriRenamer_unRenameNode(string $name){
 	int $unRenameTrue=0;
@@ -183,14 +146,9 @@ global proc AriRenamer_imput(int $mode){
 	}
 	int $renameMode=0;
 	$renameMode=`intField -q -v $AriRenameModeView`;
-	if($renameMode==0) button -e -l "Rename" -bgc 1 1 0.2   $AriRenamerButton[0];
-	if($renameMode==1) button -e -l "Link"   -bgc 1 0.6 0.3 $AriRenamerButton[0];
-	if($renameMode==2) button -e -l "Rename" -bgc 1 0 0     $AriRenamerButton[0];
-	if($renameMode==3){
-			button -e -l "ファイル" -ann "選択したノードを取得リスト一覧に追加" -bgc 1 0 0.5 -c "AriRenamer_imput(0)" $AriRenamerButton[1];
-			button -e -l "Rename" -bgc 1 0 1   $AriRenamerButton[0];
-	}
-	else	button  -e -label "取得" -ann "選択したノードを取得リスト一覧に追加" -bgc 0 0.8 0.5 -c "AriRenamer_imput(0)" $AriRenamerButton[1];
+	if($renameMode==0)button -e -l "Rename" -bgc 1 1 0.2   $AriRenamerButton[0];
+	if($renameMode==1)button -e -l "Link"   -bgc 1 0.6 0.3 $AriRenamerButton[0];
+	if($renameMode==2)button -e -l "Rename" -bgc 1 0 0     $AriRenamerButton[0];
 	string $text = `textField -q -text $AriRenameInputField[2]`;
 	string $selectList[];
 	if($renameMode==0)$selectList=`ls -sl`;
@@ -389,7 +347,7 @@ global proc AriRenamer_RenameGO(){
 		$errorPatternString[2]="システムが自動的にリネーム";
 		$errorPatternString[12]="同じ為変更なし";
 		$errorPatternString[13]="空白の為変更なし";
-		$errorPatternString[14]="新しい名前には正当な文字がない為変更なし";
+		$errorPatternString[14]="有効名ではない為変更なし";
 		$errorPatternString[15]="デフォルトノードの為変更なし";
 		$errorPatternString[16]="リファレンスの為変更なし";
 		$errorPatternString[17]="ロックされたノードの為変更なし";
@@ -426,13 +384,11 @@ global proc AriRenamer_RenameGO(){
 					print "空白のため変更なし\n";
 					continue;
 				}
-				/*
 				if(0==isValidObjectName($renameList[$i])){
 					$errorPattern[$i]=14;
 					print "有効名ではない為変更なし\n";
 					continue;
 				}
-				*/
 				if(AriRenamer_unRenameNode($baseLongList[$i])){
 					$errorPattern[$i]=15;
 					print "デフォルトノードの為変更なし\n";
@@ -449,11 +405,7 @@ global proc AriRenamer_RenameGO(){
 					print "ロックされたノードの為変更なし\n";
 					continue;
 				}
-				if(catch($resultName = `rename $baseLongList[$i] $renameList[$i]`)){
-					$errorPattern[$i]=14;
-					print "新しい名前には正当な文字が為変更なし\n";
-					continue;
-				}
+				$resultName=`rename $baseLongList[$i] $renameList[$i]`;
 				$resultNameList[$i]=$resultName;
 				print ($baseLongList[$i]+" >>> "+$resultName+"\n");
 				if($renameList[$i] == $resultName){
@@ -500,8 +452,8 @@ global proc AriRenamer_RenameGO(){
 				if($error>=10){
 					$resultText=$baseList[$i];
 				}
-				string $texF1=`textField -p $cLayout[0] -w 60 -ed 0 -en 1 -text $baseList[$i]`;
-				string $texF2=`textField -p $cLayout[1] -w 60 -ed 0 -en 1 -text $renameList[$i]`;
+				string $texF1=`textField -p $cLayout[0] -w 60 -ed 0 -en 0 -text $baseList[$i]`;
+				string $texF2=`textField -p $cLayout[1] -w 60 -ed 0 -en 0 -text $renameList[$i]`;
 				string $texF3=`textField -p $cLayout[2] -w 60 -ed 0 -en 1 -text $resultText`;
 				string $texF4=`textField -p $cLayout[3] -w 60 -ed 0 -en 1 -text ($errorPatternString[$error])`;
 				if($error==0)textField -e -bgc 0.6 0.8 1 $texF3;
@@ -908,7 +860,7 @@ global proc AriRenamer_numbering_GO(){
 	}
 	AriRenamer_writeScrollField($reTextList);
 }
-global proc AriRenamer_numbering_Save_GO(int $closeTrue){
+global proc AriRenamer_numbering_Save_GO(){
 	global string $AriReNumber_field[3];
 	global string $AriReNumber_radio[7];
 	int $startNum =`intField -q -v $AriReNumber_field[0]`;
@@ -925,8 +877,7 @@ global proc AriRenamer_numbering_Save_GO(int $closeTrue){
 	optionVar -iv "AriRenamerNumStartNum" $startNum;
 	optionVar -iv "AriRenamerNumFigure"   $digits;
 	optionVar -iv "AriRenamerNumAlphabet" $alphabetMode;
-	if($closeTrue)	deleteUI AriRenamer_numbering;
-	else 			AriRenamer_numbering_GO();
+	deleteUI AriRenamer_numbering;
 }
 global proc AriRenamer_replace_window(){
 	global string $AriRenameScrollField[2];
@@ -1376,6 +1327,37 @@ global proc AriRenamer_Condition_GroupName(){
 	}
 	AriRenamer_writeScrollField($reTextList);
 }
+global proc string[] AriRenamer_NumberSeparate(string $beforeName,int $mode){
+	string $afterName[];
+	int $nameSize=size($beforeName);
+	int $breakNum1=0;
+	int $breakNum2=0;
+	for($i=0;$i<$nameSize;$i++){
+		string $end=(substring($beforeName , $nameSize-$i ,$nameSize-$i));		
+		if(`gmatch $end ("[0-9]")`){
+			$breakNum1=$i+1;
+		}
+		else{
+			break;
+		}
+		if(`gmatch $end ("[1-9]")`){
+			$breakNum2=$i+1;
+		}
+	}
+	string $stringString;
+	string $stringNumber;
+	if($mode==0){
+		$stringString=startString ($beforeName,$nameSize-$breakNum1);
+	    $stringNumber=endString ($beforeName,$breakNum1);
+	}
+	if($mode==1){
+		$stringString=startString ($beforeName,$nameSize-$breakNum2);
+	    $stringNumber=endString ($beforeName,$breakNum2);
+	}
+	$afterName[0]=$stringString;
+	$afterName[1]= $stringNumber;
+	return $afterName;
+}
 global proc AriRenamer_modeChange(){
 	global string $AriRenameModeView;
 	global string $AriRenameScrollField[3];
@@ -1466,8 +1448,7 @@ global proc AriRenamer_Numbering_Window(){
     	$AriReNumber_radio[0]=`radioButton -label "最後"`;
 		$AriReNumber_radio[1]=`radioButton -label "カーソル位置(前文字数一致)"`;
     	$AriReNumber_radio[2]=`radioButton -label "カーソル位置(後文字数一致)"`;
-	button -w 160 -l "Save Close" -c "AriRenamer_numbering_Save_GO(1)";
-	button -w 160 -l "Apply" -c "AriRenamer_numbering_Save_GO(0)";
+	button -w 160 -l "Save" -c "AriRenamer_numbering_Save_GO";
 	if($pos==0)	radioButton -e -select $AriReNumber_radio[0];
 	if($pos==1)	radioButton -e -select $AriReNumber_radio[1];
 	if($pos==2)	radioButton -e -select $AriReNumber_radio[2];
@@ -1499,7 +1480,7 @@ global proc AriRenamer(){
 				button  -w 60 -h 25 -label "階層取得" -c "SelectHierarchy; AriRenamer_imput(0);";
 				separator -h 4 -w 60 -st "in";
 				$AriRenameInputField[2]=`textField -w 60 -h 24 -cc "AriRenamer_imput(0)"`;
-				$AriRenamerButton[1] = `button  -w 60 -h 50 -label "取得" -ann "選択したノードを取得リスト一覧に追加" -bgc 0 0.8 0.5 -c "AriRenamer_imput(0)"`;
+				button  -w 60 -h 50 -label "取得" -ann "選択したノードを取得リスト一覧に追加" -bgc 0 0.8 0.5 -c "AriRenamer_imput(0)";
 			setParent..;
 			columnLayout;
 				button -w 60 -h 25 -l "追加" -c "AriRenamer_imput(1)" -ann "取得リストに追加します";
@@ -1513,9 +1494,9 @@ global proc AriRenamer(){
 			string $formB;
 			string $button[];
 			$formB=`formLayout`;
-				$button[0] = `button -w 105 -label "■ Del >" -ann "すべての行で カーソルより前にある文字数を保管し 後ろの文字を消去" -c "AriRenamer_DelBs(0)"`;
-				$button[1] = `button -w 105 -label "< BS ■" -ann "すべての行で カーソルより後ろにある文字数を保管し 前の文字を消去" -c "AriRenamer_DelBs(1)"`;
-				$button[2] = `button -w 60  -label "Undo" -ann "元に戻す" -c "AriRenamer_Undo()"`;
+				$button[0]=`button -w 105 -label "■ Del >" -ann "すべての行で カーソルより前にある文字数を保管し 後ろの文字を消去" -c "AriRenamer_DelBs(0)"`;
+				$button[1]=`button -w 105 -label "< BS ■" -ann "すべての行で カーソルより後ろにある文字数を保管し 前の文字を消去" -c "AriRenamer_DelBs(1)"`;
+				$button[2]=`button -w 60  -label "Undo" -ann "元に戻す" -c "AriRenamer_Undo()"`;
 			setParent..;
 			formLayout -e
 				-af $button[0] "left"  0             -ap $button[0] "right" 0 40
@@ -1595,5 +1576,4 @@ global proc AriRenamer(){
 	AriRenamer_imput(0);
 	scriptJob -p "AriRenamer" -event "SelectionChanged" "AriRenamer_ObjSelect";
 }
-
 
