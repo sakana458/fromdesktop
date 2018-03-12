@@ -84,7 +84,7 @@ global string $gMainWindow;
     //CraftsTabショートカットキーを自動で登録します
     
     if ( (`hotkeySet -ex CraftsTabKeySet`) == true ) hotkeySet -e -delete CraftsTabKeySet;
-	hotkeySet -e -import "D:\user\新しいフォルダー\maya\2017\ja_JP\prefs\hotkeys\CraftsTabKeySet.mhk";
+	hotkeySet -e -import "D:\Project\GitHub\fromCrafts\fromdesktop\cgi\scripts\prefs\hotkeys\CraftsTabKeySet.mhk";
 	hotkeySet -e -current CraftsTabKeySet;
        
     //自動でシェルフに登録するmel  
