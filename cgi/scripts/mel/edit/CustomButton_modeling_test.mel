@@ -1,0 +1,44 @@
+{
+	if ( (`window -ex AriToolWindow`) == true ) deleteUI AriToolWindow;
+	window -title "Modeling_Tool"  AriToolWindow;
+	
+	scrollLayout;
+	
+	columnLayout -w 120 -adj true;
+		
+	button -l "アウトライナ" -c "OutlinerWindow";
+	button -l "ハイパーシェード" -c "HypershadeWindow";
+	
+	separator ;//ただの分割線
+	
+	button -l "シンメトリーチェック" -c "AriSymmetryChecker";
+	button -l "リネーマー" -c "AriRenamer";
+	
+	separator ;//ただの分割線
+	
+	button -l "UVスケール" -c "AriUVScaleChecker";
+	button -l "UV格子状" -c "AriUVGridding";
+	button -l "UV格子状オプション" -c "AriUVGriddingOptions";
+	
+	separator ;//ただの分割線
+
+	button -l "中心ピボット" -c "CenterPivot";
+	button -l "トランスフォームのフリーズ" -c "FreezeTransformations";
+
+	separator ;//ただの分割線
+	
+	//ここから下はダミー
+	button -l "中心ピボット" -c "CenterPivot";
+	button -l "トランスフォームのフリーズ" -c "FreezeTransformations";
+		
+	separator ;//ただの分割線
+	
+	button -l "" -c "";
+	button -l "" -c "";
+	
+	setParent..;
+	setParent..;
+	
+	showWindow;
+	
+}
